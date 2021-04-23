@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="59px" height="33px" viewBox="0 0 59 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.4 (67378) - http://www.bohemiancoding.com/sketch -->
+    <title>product-stock</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons" transform="translate(-298.000000, -492.000000)">
+            <rect id="Rectangle-17" fill="#4E555A" x="305" y="501" width="14" height="14" rx="2"></rect>
+            <rect id="Rectangle" fill="#60666A" x="322" y="507" width="29" height="2" rx="1"></rect>
+            <rect id="Rectangle" fill="#60666A" x="322" y="502" width="29" height="2" rx="1"></rect>
+            <rect id="Rectangle" fill="#60666A" x="322" y="512" width="22" height="2" rx="1"></rect>
+            <path d="M311.353553,508.732233 L315.267767,504.818019 C315.658291,504.427495 316.291456,504.427495 316.681981,504.818019 C317.072505,505.208544 317.072505,505.841709 316.681981,506.232233 L311.732233,511.181981 C311.658508,511.255706 311.576135,511.315513 311.48838,511.361401 C311.106521,511.5796 310.611502,511.525716 310.285534,511.199747 L307.457107,508.37132 C307.066582,507.980796 307.066582,507.347631 307.457107,506.957107 C307.847631,506.566582 308.480796,506.566582 308.87132,506.957107 L310.646447,508.732233 C310.841709,508.927495 311.158291,508.927495 311.353553,508.732233 Z" id="Path" fill="#60666A"></path>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="59px" height="33px" viewBox="0 0 59 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.4 (67378) - http://www.bohemiancoding.com/sketch -->
+    <title>product-stock-blue</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons" transform="translate(-428.000000, -492.000000)">
+            <rect id="Rectangle-17" fill="#386689" x="435" y="501" width="14" height="14" rx="2"></rect>
+            <rect id="Rectangle" fill="#577E9C" x="452" y="507" width="29" height="2" rx="1"></rect>
+            <rect id="Rectangle" fill="#577E9C" x="452" y="502" width="29" height="2" rx="1"></rect>
+            <rect id="Rectangle" fill="#577E9C" x="452" y="512" width="22" height="2" rx="1"></rect>
+            <path d="M441.353553,508.732233 L445.267767,504.818019 C445.658291,504.427495 446.291456,504.427495 446.681981,504.818019 C447.072505,505.208544 447.072505,505.841709 446.681981,506.232233 L441.732233,511.181981 C441.658508,511.255706 441.576135,511.315513 441.48838,511.361401 C441.106521,511.5796 440.611502,511.525716 440.285534,511.199747 L437.457107,508.37132 C437.066582,507.980796 437.066582,507.347631 437.457107,506.957107 C437.847631,506.566582 438.480796,506.566582 438.87132,506.957107 L440.646447,508.732233 C440.841709,508.927495 441.158291,508.927495 441.353553,508.732233 Z" id="Path" fill="#577E9C"></path>
+        </g>
+    </g>
+</svg>
