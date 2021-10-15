@@ -47,7 +47,7 @@ Class CT_Modal extends CT_Component {
 		ob_start();
 
 		?>
-            <div class="oxy-modal-backdrop <?php if(isset($options['modal_position'])) echo esc_attr( $options['modal_position'] ); ?> <?php if(isset($options['close_modal_on_backdrop_click']) && $options['close_modal_on_backdrop_click'] == 'no' ) echo 'oxy-not-closable'; ?>"
+            <div tabindex="-1" class="oxy-modal-backdrop <?php if(isset($options['modal_position'])) echo esc_attr( $options['modal_position'] ); ?> <?php if(isset($options['close_modal_on_backdrop_click']) && $options['close_modal_on_backdrop_click'] == 'no' ) echo 'oxy-not-closable'; ?>"
                 <?php if(isset($options['backdrop_color'])) echo 'style="background-color: ' . oxygen_vsb_get_global_color_value( esc_attr( $options['backdrop_color'] ) ) . ';"'; ?>
 
                 <?php if(isset($options['trigger'])) echo 'data-trigger="' . esc_attr( $options['trigger'] ) . '"'; ?>
@@ -97,6 +97,8 @@ Class CT_Modal extends CT_Component {
                       lineNumbers: true,
                       mode: 'javascript',
                       type: 'custom-js',
+                      autoCloseBrackets: true,
+                      matchBrackets: true,
                       readOnly : true,
                       onLoad: codemirrorLoaded
                     }">
@@ -173,6 +175,20 @@ jQuery( document ).ready( function() {
                     var $modal = jQuery( modal );
                     $modal.addClass("live");
                     var modalId = $modal[0].querySelector('.ct-modal').id;
+                    
+                    var focusable = modal.querySelector('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), select:not([disabled])');
+
+                    if(focusable) {
+                        setTimeout(() => {
+                            focusable.focus();    
+                        }, 500);
+                        
+                        console.log(focusable);
+                    }
+
+                    setTimeout(() => {
+                        $modal.focus();
+                    }, 500)
 
                     // Check if this modal can be shown according to settings and last shown time
                     // Current and last time in milliseconds

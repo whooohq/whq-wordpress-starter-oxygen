@@ -36,3 +36,8 @@ global $oxygen_toolbar;
 	ng-show="iframeScope.pageSettingsMeta.scripts['scroll_to_hash']=='true'">
 	<?php $oxygen_toolbar->global_slider_measure_box_with_wrapper('page', "['scripts']['scroll_to_hash_time']", __('Scroll Time','oxygen'), 'ms', 0, 1000, "", 100); ?>
 </div>
+
+<div class='oxygen-control-row'
+	ng-show="iframeScope.pageSettingsMeta.scripts['scroll_to_hash']=='true'">
+	<?php $oxygen_toolbar->global_slider_measure_box_with_wrapper('page', "['scripts']['scroll_to_hash_offset']", __('Scroll Offset','oxygen'), 'px', 0, 1000, "", 100); ?>
+</div>

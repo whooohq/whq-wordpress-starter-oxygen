@@ -558,7 +558,33 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
             {
                 name: 'Advanced',
                 children: [
-                    $scope.dynamicShortcodePHP
+                    $scope.dynamicShortcodePHP,
+                    {
+                        name: 'Post ID',
+                        data: 'id'
+                    },
+                    {
+                        name: 'Post Type',
+                        data: 'post_type'
+                    },
+                    {
+                        name: 'Taxonomy Terms',
+                        data: 'post_terms',
+                        properties: [
+                            {
+                                name: 'Taxonomy',
+                                data: 'taxonomy',
+                                type: 'select',
+                                options: _.object( _.map(CtBuilderAjax.taxonomies, function(item) { return [item, item] }) )
+                            },
+                            {
+                                name: 'Separator',
+                                data: 'separator',
+                                type: 'text',
+                                value: ', '
+                            }
+                        ]
+                    },
                 ]
             }
         ];
@@ -926,6 +952,17 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
             range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
             range.select();//Select the range (make it the visible selection
         }
+    }
+
+    /**
+     * callback for inserting dynamic data to advanced query values
+     * @author Gagan S Goraya
+     * @since 3.6
+     */
+    $scope.updateDynamicQueryParams = function(text) {
+        setTimeout(function() {
+            $scope.setOption($scope.component.active.id, 'oxy_dynamic_list', 'wp_query_advanced');
+        }, 100);
     }
 
     $scope.insertAtCursor = function(text) {
@@ -3431,7 +3468,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'ct_section':
 
-                    var tag = $scope.component.options[id]['model'].tag,
+                    var tag = $scope.regexTestCustomTag($scope.component.options[id]['model'].tag) ? $scope.component.options[id]['model'].tag : "div",
                         pseOpen = pseClose = '';
 
                     classes = 'class="ct-section {{getComponentsClasses('+id+', \''+componentName+'\')}}" ';
@@ -3479,7 +3516,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'ct_headline':
 
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
                     template = '<'+tag+' contenteditable="false" ng-model="component.options['+id+'][\'model\'].ct_content" ng-model-options="{ debounce: 10 }" ' + options + classes + dndDraggableAttr +'></'+tag+'>';
                     break
@@ -3503,7 +3540,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'ct_text_block':
                     
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.regexTestCustomTag($scope.component.options[id]['model'].tag)? $scope.component.options[id]['model'].tag : "div";
 
                     template = '<'+tag+' contenteditable="false" ng-model="component.options['+id+'][\'model\'].ct_content" ng-model-options="{ debounce: 10 }" ' + options + classes + dndDraggableAttr + '></'+tag+'>';
                     break
@@ -3515,7 +3552,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'ct_div_block':
 
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
                     template = '<'+tag+' is-nestable="true" ' + options + classes + dndDraggableAttr + dndListAttr + dndListAttrHorizontal + '>' +
                                 '</'+tag+'>';
@@ -3631,7 +3668,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'ct_code_block':
 
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
                     template = '<'+tag+' ' + options + classes + dndDraggableAttr + '></'+tag+'>';
                     var timeout = $timeout(function() {
@@ -3643,7 +3680,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
                     break
 
                 case 'ct_inner_content':
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
                     var workArea = '';
                     if(id >= 100000) {
                         workArea = ' ct-inner-content-workarea ';
@@ -3804,7 +3841,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
                 case 'oxy_rich_text':
 
-                    var tag = $scope.component.options[id]['model'].tag;
+                    var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
                     template = '<'+tag+' ng-dblclick="parentScope.openTinyMCEDialog()"' + options + classes + dndDraggableAttr + 'ng-bind-html="trustedHTML(component.options['+id+"]['model']['ct_content'])\">" + '</'+tag+'>';
                     break
@@ -4016,7 +4053,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
         // shortcodes 
         else if ( type == "shortcode" ) {
 
-            var tag = $scope.component.options[id]['model'].tag;
+            var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
             template = '<'+tag+' ' + options + classes + dndDraggableAttr + '></'+tag+'>';
             
@@ -4057,7 +4094,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
         // data
         else if ( type == "data" ) {
 
-			var tag = $scope.component.options[id]['model'].tag;
+			var tag = $scope.filterCustomTag($scope.component.options[id]['model'].tag);
 
 			switch(componentName) {
 				case 'ct_data_featured_image':
@@ -4256,7 +4293,7 @@ CTFrontendBuilder.controller("MainController", function($scope, $parentScope, $h
 
     $scope.getMapURL = function(id) {
         
-        return $scope.trustedSource("https://maps.google.com/maps?q="+encodeURI($scope.component.options[id]['model'].map_address)+"&t=m&z="+$scope.component.options[id]['model'].map_zoom+"&output=embed&iwloc=near&key="+CtBuilderAjax.googleMapsAPIKey);
+        return $scope.trustedSource("https://www.google.com/maps/embed/v1/place?key="+CtBuilderAjax.googleMapsAPIKey+"&q="+encodeURI($scope.component.options[id]['model'].map_address)+"&zoom="+$scope.component.options[id]['model'].map_zoom);
     }
 
 

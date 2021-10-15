@@ -720,9 +720,6 @@ CTFrontendBuilder.directive("ngBuilderWrap", function ($parentScope, $compile, $
                 scope.justaddedcomponents = scope.justaddedcomponents || [];
                 scope.justaddedcomponents.push(scope.component.id);
 
-                // update sortable
-                //jQuery('.ct-sortable').sortable('update');
-
                 // update options
                 scope.setOption(scope.component.id, componentName);
                 scope.setFirstTimeOptions(scope.component.id, componentName);
@@ -878,7 +875,7 @@ CTFrontendBuilder.directive("ngBuilderWrap", function ($parentScope, $compile, $
                     var timeout = $timeout(function() {
                         scope.waitOxygenTree(function(){
                             var imageId = scope.addComponent("ct_image", "builtin", true);
-                            scope.setOptionModel('src', "http://placehold.it/300x150", imageId, "ct_image");
+                            scope.setOptionModel('src', "http://via.placeholder.com/300x150", imageId, "ct_image");
 
                             scope.addComponent("ct_link_button", false, true);
                         })

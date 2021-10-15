@@ -129,6 +129,8 @@ CTCommonDirectives.directive("ctdynamicdata", function($compile, ctScopeService)
         replace: true,
         scope: {
             data: "=",
+            result: "=",
+            resultkey: "@",
             callback: "=",
             noshadow: "=",
             backbutton: "=",
@@ -152,9 +154,9 @@ CTCommonDirectives.directive("ctdynamicdata", function($compile, ctScopeService)
                    }
 
                 }
-
-                if(scope.callback && (!item.properties || item.properties.length == 0 )) {
-                    
+                
+                if((scope.callback || scope.result !== undefined) && (!item.properties || item.properties.length == 0 )) {
+                
                     var shortcode = '[oxygen data="'+dataitem.data+'"';
                     
                     var finalVals = {};
@@ -189,10 +191,33 @@ CTCommonDirectives.directive("ctdynamicdata", function($compile, ctScopeService)
 
                     shortcode+=']';
                     if (scope.optionname!=undefined) {
-                        scope.callback(shortcode, scope.optionname);
+                        
+                        if(scope.result !== undefined) {
+                            if(scope.resultkey !== undefined) {
+                                scope.result[scope.resultkey] = shortcode;    
+                            } else {
+                                scope.result = shortcode;    
+                            }
+                        }
+
+                        if(scope.callback) {
+                            scope.callback(shortcode, scope.optionname, element);
+                        }
+                        
                     }
                     else {
-                        scope.callback(shortcode)
+                        
+                        if(scope.result !== undefined) {
+                            if(scope.resultkey !== undefined) {
+                                scope.result[scope.resultkey] = shortcode;    
+                            } else {
+                                scope.result = shortcode;    
+                            }
+                        }
+
+                        if(scope.callback) {
+                            scope.callback(shortcode)  
+                        }
                     };
 
                     angular.element('#ctdynamicdata-popup').remove();
@@ -946,6 +971,19 @@ CTCommonDirectives.directive("contenteditable", function($timeout,$interval, ctS
             }
 
             ngModel.$render = function() {
+
+                if (typeof(attrs['disabledynamic']) !== 'undefined' && attrs['disabledynamic'] === "true") {
+                    
+                    element.removeClass('oxygen-disabled')
+
+                    ngModel.$viewValue.replace(/\<span id\=\"ct-placeholder-([^\"]*)\"\>\<\/span\>/ig, function(match, id) {
+                        var oxy = $scope.iframeScope.component.options[parseInt(id)]['model']['ct_content'];
+                        var containsOxy = oxy.match(/\[oxygen[^\]]*\]/ig);
+                        if(containsOxy) {
+                            element.addClass('oxygen-disabled')
+                        }
+                    });
+                }
 
                 element.html(ngModel.$viewValue || "");
 

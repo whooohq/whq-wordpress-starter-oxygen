@@ -4,11 +4,16 @@
       newlineAndIndent: false,
       mode: 'php',
       type: 'php',
+      matchTags: {bothTags: true},
+      autoCloseBrackets: true,
+      matchBrackets: true,
       onLoad : codemirrorLoaded
     }" <?php $this->ng_attributes('code-php','model'); ?>></textarea>
 </div>
 
 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+  <?php global $oxygen_toolbar; 
+    $oxygen_toolbar->codemirror_theme_chooser(); ?>
   <a href="#" class="oxygen-code-editor-apply"
     ng-click="iframeScope.applyCodeBlockPHP()">
     <?php _e("Apply Code", "oxygen"); ?>

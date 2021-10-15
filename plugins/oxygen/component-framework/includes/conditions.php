@@ -29,7 +29,10 @@ Class OxygenConditions {
 		add_action('init', array($this, 'register_post_type_condition'), 99);
 		add_action('init', array($this, 'register_user_role_condition'), 99);
 		add_action('init', array($this, 'register_condition_post_type'), 99);
-		add_action('init', array($this, 'register_condition_taxonomy_term'), 99);
+		if ( isset( $_GET['ct_builder'] ) && $_GET['ct_builder'] ) {
+			// only regiter in builder and inside shortcode validation
+			add_action('init', array($this, 'register_condition_taxonomy_term'), 99);
+		}
 		add_action('init', array($this, 'register_category_condition'), 99);
 		add_action('init', array($this, 'register_tag_condition'), 99);
 		add_action('init', array($this, 'register_status_condition'), 99);
@@ -173,7 +176,7 @@ Class OxygenConditions {
 		$this->register_condition(
 			'ZZOXYVSBDYNAMIC', 
 			array('custom' => true), 
-			array('==', '>=', '<=', 'contains', 'is_blank', 'is_not_blank'), 
+			array('==', '>=', '<=', 'contains', 'is_blank', 'is_not_blank', '!=', '>', '<', 'does_not_contain'),
 			'dynamic_data_callback', 
 			'Other');
 	}
@@ -267,6 +270,11 @@ Class OxygenConditions {
 		$result = !$or;
 
 		foreach ($conditions as $condition) {
+
+			// Register only when used as it may be pretty heavy
+			if ($condition['name'] == "Taxonomy Term") {
+				$this->register_condition_taxonomy_term();
+			}
 				
 			// check if condition exist
 			if ( ! isset($this->global_conditions[$condition['name']]) ) {
@@ -291,11 +299,6 @@ Class OxygenConditions {
 				isset($this->global_conditions[$condition['name']]['callback']) &&
 				$callback !== false
 			) {
-				// sign the shortcode before eval
-				if (stripos($condition['value'], '[oxygen')  !== false) {
-					$condition['value'] = ct_sign_oxy_dynamic_shortcode(array($condition['value']));
-				}
-				
 				$condition['value'] = do_shortcode($condition['value']); // because the value main contain a shortcode
 				
 				if($condition['name']=='ZZOXYVSBDYNAMIC') {
@@ -591,7 +594,7 @@ Class OxygenConditions {
 
 
 	function date_callback($value, $operator) {
-		
+
 		$current_time = current_time('timestamp');
 		$date = strtotime($value, $current_time);
 
@@ -990,6 +993,24 @@ Class OxygenConditions {
 			} else {
 				return false;
 			}
+		} else if ($operator == "!=") {
+			if ($executed_shortcode != $value) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if ($operator == ">") {
+			if ($executed_shortcode > $value) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if ($operator == "<") {
+			if ($executed_shortcode < $value) {
+				return true;
+			} else {
+				return false;
+			}
 		} else if ($operator == ">=") {
 			if ($executed_shortcode >= $value) {
 				return true;
@@ -1004,6 +1025,12 @@ Class OxygenConditions {
 			}
 		} else if ($operator == "contains") {
 			if (strpos($executed_shortcode, $value) !== false) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if ($operator == "does_not_contain") {
+			if (strpos($executed_shortcode, $value) === false) {
 				return true;
 			} else {
 				return false;
@@ -1133,28 +1160,53 @@ Class OxygenConditions {
 	}
 }
 
-//if ( !is_admin() ) {
-	global $OxygenConditions;
-	$OxygenConditions = new OxygenConditions();
-//}
+function register_oxy_conditions() {
 
-/**
- * Conditions API support for Oxygen before 3.3
- */
+	$ajax_action_hooks = array(
+		'load_conditions_terms', 
+		'load_conditions_tags',
+		'load_conditions_categories',
+		'ct_get_post_data',
+		'ct_get_template_data',
+	);
 
-global $oxy_condition_operators;
-$oxy_condition_operators = $OxygenConditions->condition_operators;
+	global $pagenow;
 
-function oxygen_vsb_register_condition($tag, $values=array('options'=>array()), $operators=array(), $callback, $category = null ) {
-	global $OxygenConditions;
-	$OxygenConditions->register_condition($tag, $values, $operators, $callback, $category);
+    if ( $pagenow == 'post.php' || $pagenow == 'post-new.php' || !is_admin() || (isset($_GET['action']) && in_array($_GET['action'], $ajax_action_hooks))) {
+		
+		global $OxygenConditions;
+		$OxygenConditions = new OxygenConditions();
+		
+		/**
+		 * Conditions API support for Oxygen before 3.3
+		 */
+
+		global $oxy_condition_operators;
+		$oxy_condition_operators = $OxygenConditions->condition_operators;
+
+		function oxygen_vsb_register_condition($tag, $values=array('options'=>array()), $operators=array(), $callback, $category = null ) {
+			global $OxygenConditions;
+			$OxygenConditions->register_condition($tag, $values, $operators, $callback, $category);
+		}
+		function oxy_condition_eval_int($comp, $value, $operator) {
+			global $OxygenConditions;
+			return $OxygenConditions->eval_int($comp, $value, $operator);
+		}
+
+		function oxy_condition_eval_string($comp, $value, $operator) {
+			global $OxygenConditions;
+			return $OxygenConditions->eval_string($comp, $value, $operator);
+		}
+
+	}
+	else {
+		function oxygen_vsb_register_condition($tag, $values=array(), $operators=array(), $callback, $category = null ) {
+		}
+		function oxy_condition_eval_int($comp, $value, $operator) {
+		}
+		function oxy_condition_eval_string($comp, $value, $operator) {
+		}
+	}
 }
-function oxy_condition_eval_int($comp, $value, $operator) {
-	global $OxygenConditions;
-	return $OxygenConditions->eval_int($comp, $value, $operator);
-}
 
-function oxy_condition_eval_string($comp, $value, $operator) {
-	global $OxygenConditions;
-	return $OxygenConditions->eval_string($comp, $value, $operator);
-}
+add_action( 'plugins_loaded', 'register_oxy_conditions', -1 );

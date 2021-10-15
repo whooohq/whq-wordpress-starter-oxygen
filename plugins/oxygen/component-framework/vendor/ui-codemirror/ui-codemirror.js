@@ -27,15 +27,24 @@ function uiCodemirrorDirective($timeout, uiCodemirrorConfig) {
   };
 
   function postLink(scope, iElement, iAttrs, ngModel) {
-
+    var wrap = scope.iframeScope.globalCodeMirrorWrap === 'true';
     var codemirrorOptions = angular.extend(
-      { value: iElement.text() },
+      { 
+        value: iElement.text(),
+        theme: scope.iframeScope.globalCodeMirrorTheme,
+        lineWrapping: wrap,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: true,
+      },
       uiCodemirrorConfig.codemirror || {},
       scope.$eval(iAttrs.uiCodemirror),
       scope.$eval(iAttrs.uiCodemirrorOpts)
     );
 
     var codemirror = newCodemirrorEditor(iElement, codemirrorOptions);
+
+    scope.$parent.globalCodeMirror = codemirror;
 
     configOptionsWatcher(
       codemirror,

@@ -154,6 +154,27 @@ class Oxygen_VSB_Dynamic_Shortcodes {
 		return get_the_title();
 	}
 
+	function oxygen_id($atts) {
+		return get_the_ID();
+	}
+
+	function oxygen_post_type($atts) {
+		global $post;
+		return $post->post_type;
+	}
+
+	function oxygen_post_terms($atts) {
+
+		$separator = isset($atts['separator']) ? $atts['separator'] : ", ";
+		$taxonomy = isset($atts['taxonomy']) ? $atts['taxonomy'] : "";
+
+		$term_obj_list = get_the_terms( get_the_ID(), $taxonomy );
+		$terms_string = join($separator, wp_list_pluck($term_obj_list, 'slug'));
+
+		return $terms_string;
+	
+	}
+
 	function oxygen_content($atts) {
 
 		global $post;
@@ -201,6 +222,10 @@ class Oxygen_VSB_Dynamic_Shortcodes {
 	function oxygen_terms($atts) {
 		$separator = isset($atts['separator']) ? $atts['separator'] : "";
 		$taxonomy = isset($atts['taxonomy']) ? $atts['taxonomy'] : "";
+
+		if(!taxonomy_exists($taxonomy)) {
+			return '';
+		}
 
 		return get_the_term_list(get_the_ID(), $taxonomy, null, $separator, null );
 	}
@@ -270,7 +295,7 @@ class Oxygen_VSB_Dynamic_Shortcodes {
 
 	function oxygen_date($atts) {
 		$format = isset($atts['format'])?$atts['format']:'';
-		return get_the_date();
+		return get_the_date($format);
 	}
 
 	function oxygen_permalink($atts) {
@@ -294,7 +319,7 @@ class Oxygen_VSB_Dynamic_Shortcodes {
 	}
 
 	function oxygen_author_pic($atts) {
-		return get_avatar_url(get_the_author_meta('email'), $atts['size']);
+		return get_avatar_url(get_the_author_meta('email'), $atts);
 	}
 
 	function oxygen_author_meta($atts) {

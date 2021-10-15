@@ -978,6 +978,8 @@ body.oxygen-builder-body .oxy-modal-backdrop {
 }
 .oxy-modal-backdrop .ct-modal {
   background-color: white;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 div.oxy-dynamic-list div.oxy-product-images.oxy-woo-element {
   align-self:stretch;
@@ -991,3 +993,45 @@ div.oxy-repeater-pages, div.oxy-repeater-pages-wrap {
 .oxy-rich-text p:last-child {
   margin-block-end: 0;
 }
+/* Custom HTML tag support */
+:-webkit-any(li, div._important),
+:is(li, div._important) {
+  display: list-item;
+}
+:-webkit-any(table, div._important),
+:is(table, div._important){
+	display: table;
+}
+:is(thead, div._important),
+:-webkit-any(thead, div._important){
+	display: table-header-group;
+}
+:is(tr, div._important),
+:-webkit-any(tr, div._important) {
+	display: table-row;
+}
+:is(tbody, div._important),
+:-webkit-any(tbody, div._important) {
+	display: table-row-group;
+}
+:is(th, td, div._important),
+:-webkit-any(th, td, div._important) {
+	display: table-cell;
+}
+:is(caption, div._important),
+:-webkit-any(caption, div._important) {
+	display: table-caption;
+}
+:is(colgroup, div._important),
+:-webkit-any(colgroup, div._important){
+	display: table-column-group;
+}
+:is(col, div._important),
+:-webkit-any(col, div._important){
+	display: table-column;
+}
+:is(tfoot, div._important),
+:-webkit-any(tfoot, div._important){
+	display: table-footer-group;
+}
+/* End custom HTML tag support */

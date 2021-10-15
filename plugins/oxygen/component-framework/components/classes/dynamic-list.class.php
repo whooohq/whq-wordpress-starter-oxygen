@@ -336,7 +336,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
     function add_shortcode( $atts, $content, $name ) {
 
         $options = $this->set_options( $atts );
-
+        
         $query = $this->setQuery($options);
         
         $this->register_properties($options['id']);
@@ -846,7 +846,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
 
     function setQuery($options , $debug=false) {
         $query = false;
-
+        
         // manual
         if (isset($options['query_args']) && isset($options['wp_query']) && $options['wp_query']=='manual') {
 
@@ -947,6 +947,12 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
             }
 
             //$this->query = new WP_Query($args);
+            $query = new WP_Query($args);
+
+        } elseif(isset($options['wp_query']) && $options['wp_query']==='advanced') {
+            include_once(CT_FW_PATH."/includes/advanced-query.php");
+            $args = Oxy_VSB_Advanced_Query::query_args($options['wp_query_advanced']);
+
             $query = new WP_Query($args);
 
         } else {
@@ -1390,7 +1396,9 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                 // ????
                 if ($key === 'globalconditions') {
                     if($value && sizeof($value) > 0) {
-                        $results['globalConditionsResult'] = $OxygenConditions->global_conditions_result(array('conditions'=>$value, 'type'=>isset($arr['conditionstype'])?$arr['conditionstype']:''));
+        				if (isset($OxygenConditions)) {
+                            $results['globalConditionsResult'] = $OxygenConditions->global_conditions_result(array('conditions'=>$value, 'type'=>isset($arr['conditionstype'])?$arr['conditionstype']:''));
+                        }
                     }
                 }
                 else
@@ -1519,6 +1527,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                             <?php 
                             $param = [];
                             $param['param_name'] = 'flex-direction';
+                            $tag = $this->options['tag'];
                             ?>
                             <?php include( CT_FW_PATH . '/toolbar/views/position/position.flex-layout.view.php');?>
                         </div>
@@ -2149,7 +2158,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                     
                         <a href='#' id='oxygen-control-borders-radius-individual'
                             ng-click="editIndividualRadii=true">
-                            <?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+                            <?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
                     </div>
 
                 </div>
@@ -2581,7 +2590,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                     
                         <a href='#' id='oxygen-control-borders-radius-individual'
                             ng-click="editIndividualRadii=true">
-                            <?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+                            <?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
                     </div>
 
                 </div>
@@ -2725,7 +2734,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                     
                         <a href='#' id='oxygen-control-borders-radius-individual'
                             ng-click="editIndividualRadii=true">
-                            <?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+                            <?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
                     </div>
 
                 </div>
@@ -3231,7 +3240,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                     
                         <a href='#' id='oxygen-control-borders-radius-individual'
                             ng-click="editIndividualRadii=true">
-                            <?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+                            <?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
                     </div>
 
                 </div>
@@ -3375,7 +3384,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                     
                         <a href='#' id='oxygen-control-borders-radius-individual'
                             ng-click="editIndividualRadii=true">
-                            <?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+                            <?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
                     </div>
 
                 </div>
@@ -3585,11 +3594,15 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'default'); ?>
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'custom'); ?>
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'manual'); ?>
+                                <?php $oxygen_toolbar->button_list_button('wp_query', 'advanced'); ?>
                             </div>
                         </div>
                     </div>
                 </div>
-
+                <?php 
+                    include_once(CT_FW_PATH."/includes/advanced-query.php"); 
+                    Oxy_VSB_Advanced_Query::controls();
+                ?>
                
 
                 <div class='oxygen-control-row'
@@ -3643,7 +3656,7 @@ class Oxygen_VSB_Dynamic_List extends CT_Component {
             ?>
 
                 <div class="oxygen-control-row">
-                    <div class='oxygen-control-wrapper'>
+                    <div class='oxygen-control-wrapper' style="flex-grow: unset; flex-basis: 120px;}">
                         <label class="oxygen-checkbox">
                             <input type="checkbox"
                                 ng-true-value="'true'" 
@@ -4041,7 +4054,8 @@ $oxygen_vsb_components['repeater'] = new Oxygen_VSB_Dynamic_List( array(
 					),
                 "other" => array(
                     "values" => array(
-                        
+                        "wp_query_advanced" => array(),
+                        "wp_query_advanced_preset" => '',
                         "wp_query" => 'default',
                         "query_args" => 'author_name=admin&category_name=uncategorized&posts_per_page=2',
                         

@@ -247,7 +247,7 @@
 
 	<div id="oxygen-sidebar" 
 		ng-init="showLinkDataDialog = false"
-		ng-class="{'oxygen-selector-detector-mode':iframeScope.selectorDetector.mode==true}">
+		ng-class="{'oxygen-selector-detector-mode':iframeScope.selectorDetector.mode==true,'oxygen-selector-locked':iframeScope.getOption('selector-locked')=='true'}">
 
         <div class="oxygen-editing-empty-message" ng-show="showEmptyMessage">
             <div class="oxygen-sidebar-template">
@@ -584,7 +584,7 @@
 		} 
 		?>
 		<div id="oxygen-sidebar-control-panel-basic-styles" class="oxygen-sidebar-control-panel oxygen-sidebar-control-panel-basic-styles" 
-        	ng-class="{'oxygen-disabled':<?php echo (oxygen_vsb_user_can_use_ids() || oxygen_vsb_current_user_can_full_access()) ? "false" : "true"; ?>&&iframeScope.isEditing('id'),'ui-hide':!showLeftSidebar,'oxygen-widget-controls':isActiveName('ct_widget'),'oxygen-selector-detector-controls':iframeScope.selectorDetector.mode==true,'oxygen-basic-styles-subtub':hasOpenTabs('navMenu')||hasOpenTabs('slider')||hasOpenTabs('oxy_posts_grid')||hasOpenTabs('dynamicList')||hasOpenTabs('gallery')<?php echo $tabs; ?>}"
+        	ng-class="{'oxygen-disabled':(<?php echo oxygen_vsb_user_can_use_ids() || oxygen_vsb_current_user_can_full_access() ? "false" : "true"; ?>&&iframeScope.isEditing('id'))||(<?php echo oxygen_vsb_user_can_use_classes() || oxygen_vsb_current_user_can_full_access() ? "false" : "true"; ?>&&iframeScope.isEditing('class')),'ui-hide':!showLeftSidebar,'oxygen-widget-controls':isActiveName('ct_widget'),'oxygen-selector-detector-controls':iframeScope.selectorDetector.mode==true,'oxygen-basic-styles-subtub':hasOpenTabs('navMenu')||hasOpenTabs('slider')||hasOpenTabs('oxy_posts_grid')||hasOpenTabs('dynamicList')||hasOpenTabs('gallery')<?php echo $tabs; ?>}"
 
 			ng-show="!iframeScope.styleSetActive 
 				&& iframeScope.selectedNodeType!=='selectorfolder'

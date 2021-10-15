@@ -631,46 +631,6 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
             item.options["ct_content"] = componentDefaults["ct_content"];
         }
 
-        return;
-
-        // loop all component options
-        angular.forEach($scope.component.options[component.id][state], function(value, parameter) {
-
-            // include only options different from defaults and content
-            if ( componentDefaults[parameter] != value 
-            	|| parameter == 'ct_content' 
-            	|| parameter == 'shortcode_tag' 
-            	|| $scope.isEditing("media") 
-            	|| $scope.isEditing("state") ) {
-                
-                if ( parameter == 'selector' || 
-                     parameter == 'ct_id' || 
-                     parameter == 'ct_parent' ||
-                     parameter == 'ct_content' ||
-                     parameter == 'classes' || 
-                     ( parameter == "url" && component.isShortcode ) ) 
-                {
-                    item.options[parameter] = value;
-                }
-                else 
-                    // add state option
-                    if ( state ) {
-
-                        if ( !item.options[state] ) {
-                            item.options[state] = {};
-                        }
-
-                        item.options[state][parameter] = value;
-                    }
-            }
-            else {
-                if ( !item.options[state] ) {
-                    // nothing here
-                } else {
-                    delete item.options[state][parameter];
-                }
-            }
-        });
     }
 
 
@@ -1165,11 +1125,6 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
                 }
                 else if (typeof stateOptions !== 'object') {
 
-                    /*if ( stateName == "ct_content" ) {
-                        // replace template tags if found
-                        stateOptions = $scope.filterTemplateTags(stateOptions, id);
-                    }*/
-
                     if ( stateName == "selector" ) {
                         $scope.component.options[id][stateName] = stateOptions;
                     }
@@ -1367,7 +1322,7 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
 
         // Load global defaults
         if (tag=="ct_section") {
-            sectionOptions = [
+            var sectionOptions = [
                         'container-padding-top',
                         'container-padding-top-unit',
                         'container-padding-bottom',
@@ -1386,6 +1341,34 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
                 }
             }
         }
+
+        // Load grid defaults for classes
+        if ($scope.isEditing("class")) {
+            var gridOptions = [
+                        'grid-column-count',
+                        'grid-columns-auto-fit',
+                        'grid-column-min-width',
+                        'grid-column-max-width',
+                        'grid-column-gap',
+                        'grid-justify-items',
+                        'grid-match-height-of-tallest-child',
+                        'grid-row-behavior',
+                        'grid-row-count',
+                        'grid-row-min-height',
+                        'grid-row-max-height',
+                        'grid-row-gap',
+                        'grid-align-items',
+                    ]
+            
+            for(var key in gridOptions) {
+                if (gridOptions.hasOwnProperty(key) ) {
+                    optionName = gridOptions[key];
+                    if ($scope.component.options[id]['model'][optionName]==undefined || $scope.component.options[id]['model'][optionName]=="") {
+                        $scope.component.options[id]['model'][optionName]=$scope.defaultOptions[tag][optionName] || $scope.defaultOptions["all"][optionName];
+                    }
+                }
+            }
+        }
     }
 
 
@@ -1398,6 +1381,13 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
      */
 
     $scope.setOption = function(id, tag, optionName, isShortcode, notUpdateCSS) {
+
+        // advanced query presets, set to 'custom' in case the advanced query is manualy edited
+        if(optionName == 'wp_query_advanced' && $scope.parentScope.dialogForms['advancedquery']) {
+            $scope.component.options[$scope.component.active.id].model['wp_query_advanced_preset'] = 'Custom Settings';
+            $scope.setOption($scope.component.active.id, $scope.component.active.name, 'wp_query_advanced_preset');
+        }
+
         $scope.cancelDeleteUndo();
         
         if ($scope.log) {
@@ -1814,7 +1804,7 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
         $scope.outputCSSOptions(id);
 
         // if there is no active selector on the current component, have it display ID as current selector
-        if($scope.isNotSelectedYet(id) && typeof(optionName) !== 'undefined') // && optionName !== 'ct_content')
+        if($scope.isNotSelectedYet(id) && typeof(optionName) !== 'undefined')
             $scope.switchEditToId(true);
 
         $scope.functionEnd("setOption()");
@@ -2432,10 +2422,15 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
         else {
             scripts = $scope.globalSettings.scripts;
         }
+        var scroll_to_hash_offset = scripts['scroll_to_hash_offset'];
+        if (!scroll_to_hash_offset) {
+           scroll_to_hash_offset = $scope.globalSettings.scripts['scroll_to_hash_offset'];
+        }
 
         if (scripts && scripts['scroll_to_hash']=='true') {
             jQuery('body').addClass('oxygen-scroll-to-hash-links');
             jQuery('body').attr('data-oxygen-scroll-to-hash-links',scripts['scroll_to_hash_time']);
+            jQuery('body').attr('data-oxygen-scroll-to-hash-links-offset',scroll_to_hash_offset);
         }
         else {
             jQuery('body').removeClass('oxygen-scroll-to-hash-links');
@@ -4215,6 +4210,58 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
         }
     }
 
+    /**
+     * Sanitize user input for custom tags
+     *
+     * @since 3.8
+     * @author Ilya K.
+     */
+
+
+    $scope.validateCustomTag = function(optionName) {
+        
+        var id = $scope.component.active.id,
+            tag = $scope.getOption(optionName, id)
+
+        if (!$scope.regexTestCustomTag(tag)) {
+            
+            var regex = RegExp('[a-z]+[a-z0-9]*', 'gi'),
+                matched = tag.match(regex);
+
+            tag =  (matched && matched[0]) ? matched[0] : "";
+            
+            $scope.setOptionModel(optionName, tag, id)
+            $scope.showNoticeModal("<div>Tag must begin with a letter and may only contain letters (a-z and A-Z) and numbers (0-9).</div>")
+        }
+    }
+
+    $scope.regexTestCustomTag = function(tag) {
+
+        if (!tag) {
+            return false;
+        }
+
+        var regex = RegExp('[a-z]+[a-z0-9]*', 'gi')
+
+        if (tag.match(regex) && tag.match(regex)[0]==tag) {
+           return true;
+        }
+
+        return false;
+    }
+
+    $scope.filterCustomTag = function(tag) {
+
+        if (!tag) {
+            return 'div';
+        }
+
+        var regex = RegExp('[a-z]+[a-z0-9]*', 'gi'),
+            matched = tag.match(regex);
+
+        return (matched && matched[0]) ? matched[0] : "div";
+    }
+
 
     /**
      * Sanitize user input for custom attribute value
@@ -4327,6 +4374,19 @@ CTFrontendBuilder.controller("ControllerOptions", function($scope, $parentScope,
                 }
             }
         }
+    }
+
+    $scope.isIDLocked = function(id) {
+
+        if (undefined==id) {
+            id = $scope.component.active.id;
+        }
+
+        if ($scope.component.options[id] && $scope.component.options[id]['id'] && $scope.component.options[id]['id']['selector-locked'] == 'true') {
+            return true;
+        }
+
+        return false;
     }
     
 });

@@ -57,7 +57,7 @@ body.choosing-selector #ct-ui-overlay{
 }
 
 /* global styling for inputs */
-#oxygen-sidebar input:focus, #oxygen-sidebar textarea:focus  {
+#oxygen-sidebar input:focus, #oxygen-sidebar textarea:focus, #oxygen-sidebar div:focus  {
 	outline: none;
 }
 
@@ -75,6 +75,11 @@ input.oxygen-option-default,
 }
 .oxygen-no-margin {
 	margin: 0 !important;
+}
+.oxygen-selector-locked .oxygen-sidebar-advanced-subtab,
+.oxygen-selector-locked #oxygen-sidebar-control-panel-basic-styles > *{
+	pointer-events: none;
+	opacity: 0.2 !important;
 }
 
 /* oxygen sidebar top */
@@ -1015,7 +1020,18 @@ ul.oxygen-control-label li a {
 	margin-top: -6.6px;
 }
 
-
+/* Firefox only */
+@-moz-document url-prefix() { 
+	.oxygen-measure-box-slider {
+		top: 2px;
+	  }
+	  .oxygen-measure-box-slider input[type="range"] {
+		background: transparent;
+	  }
+	  .oxygen-measure-box-slider input[type="range"]::-moz-range-thumb {
+		border-width: 2px;
+	  }
+  }
 
 /* icon grid */
 
@@ -1212,6 +1228,11 @@ ul.oxygen-control-label li a {
     max-height: 350px;
 	box-shadow: 0px 0px 30px 10px rgba(0, 0, 0, 0.23);
 	margin-bottom: 30px;
+}
+
+.oxygen-select-up .oxygen-select-box-options {
+	top: unset;
+	bottom: 1px;
 }
 
 .oxygen-active-select .oxygen-select-box-options {
@@ -1906,17 +1927,38 @@ to accomodate it. flexbox is great */
 	max-width: 200px;
 	cursor: pointer;
 }
+.oxygen-control-row-bottom-bar-code-editor .oxygen-code-editor-apply, 
+.oxygen-code-editor-expand {
+	float: left;
+	padding: 7px 12px;
+	margin-left: 4px;
+	width: auto;
+}
 
-.oxygen-control-row-bottom-bar-code-editor {
-  margin: 0
+.oxygen-control-row.oxygen-control-row-bottom-bar-code-editor {
+	margin: 0;
+	display: block;
+	min-height: 57px;
+}
+
+.oxygen-codemirror-theme-chooser {
+	float: left;
+	width: 200px;
+	margin-bottom: 6px;
+}
+.oxygen-codemirror-wrap {
+	float: left;
+	margin: 0 8px 6px;
+}
+.oxygen-select-box-current-default {
+	opacity: 0.5;
 }
 
 .oxygen-code-editor-expand,
 .oxygen-code-editor-apply {
 	display: block;
-    margin-top: 10px;
+    margin-top: 0px;
 }
-
 
 .oxygen-apply-button {
 	width: auto;
@@ -4652,4 +4694,30 @@ i.ct-icon-if-conditions {
 /* Remove bottom margin, fixing unsightly gap after hiding controls in Properties Pane */
 .oxygen-edit-only-mode .oxygen-sidebar-control-panel-basic-styles .oxygen-control-row {
 	margin-bottom: 0px;
+}
+
+/*Textarea for ct_content property*/
+.oxygen-input.textarea {
+	height: auto;
+}
+
+.oxygen-input.textarea textarea,
+.oxygen-input.textarea div {
+	background: transparent;
+	border: none;
+	width: 100%;
+	min-height: 60px;
+	resize: vertical;
+	color: #fff;
+	font-family: "Source Sans Pro", serif;
+	padding: 4px 8px;
+	font-size: 14px;
+	-webkit-user-select: text;
+}
+.oxygen-input.textarea [id^="ct-placeholder"]:before{
+	display: inline-block;
+	background: #797e83;
+	border-radius: 2px;
+	margin: 0px 2px;
+	content: "[dynamic]";
 }

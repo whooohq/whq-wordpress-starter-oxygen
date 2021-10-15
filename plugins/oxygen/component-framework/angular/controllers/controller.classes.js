@@ -736,4 +736,21 @@ CTFrontendBuilder.controller("ControllerClasses", function($scope, $parentScope,
             $scope.updateSuggestedClasses();
         }
     };
+
+
+    /**
+     * 
+     */
+    $scope.isSelectorLocked = function(className) {
+
+        if ( $scope.classes[className] && $scope.classes[className]['original']) {    
+            if ($scope.classes[className]['original']['selector-locked'] == 'true') {
+                return true;
+            }
+        }
+
+        return false;
+        
+    }
+
 });

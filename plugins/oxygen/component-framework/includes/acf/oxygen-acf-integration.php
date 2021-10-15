@@ -837,7 +837,7 @@ class oxygen_acf_integration {
                 $output = is_array( $field["value"] ) ? $field["value"][0] : $field["value"];
                 break;
             case 'email':
-                $output = 'mailto://' . ( is_array( $field["value"] ) ? $field["value"][0] : $field["value"] );
+                $output = 'mailto:' . ( is_array( $field["value"] ) ? $field["value"][0] : $field["value"] );
                 break;
             case 'link':
                 $output = is_array( $field["value"] ) ? $field["value"]["url"] : $field["value"];

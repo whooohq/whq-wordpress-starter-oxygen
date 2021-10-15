@@ -476,7 +476,7 @@ $oxygen_vsb_components['testimonial'] = new Oxygen_VSB_Testimonial( array(
                             "type"          => "mediaurl",
                             "heading"       => __("Image URL", "oxygen"),
                             "param_name"    => "testimonial_photo",
-                            "value"         => "http://placehold.it/125x125",
+                            "value"         => "http://via.placeholder.com/125x125",
                             "css"           => false
                         ),
                         array(

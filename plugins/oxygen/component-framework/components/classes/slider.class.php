@@ -98,6 +98,14 @@ Class CT_Slider extends CT_Component {
 	        	$gutenberg_class .= " oxygen-slider-horizontal";
         	}
         }
+
+		if ( isset($_GET['action']) && $_GET['action'] == "ct_render_innercontent") {
+			// include Unslider when loading inside templates Inner Content
+			wp_enqueue_script( 'oxygen-unslider', 		CT_FW_URI . '/vendor/unslider/unslider-min.js', array('jquery') );
+			wp_enqueue_script( 'oxygen-event-move', 	CT_FW_URI . '/vendor/unslider/jquery.event.move.js');
+			wp_enqueue_script( 'oxygen-event-swipe', 	CT_FW_URI . '/vendor/unslider/jquery.event.swipe.js');
+			wp_print_scripts(array('oxygen-unslider','oxygen-event-move','oxygen-event-swipe'));
+		}
 		
 		?><div id="<?php echo esc_attr($options['selector']); ?>" class="<?php echo esc_attr($options['classes']). ' ' .$unique_class.$gutenberg_class; ?>" <?php do_action("oxygen_vsb_component_attr", $options, $this->options['tag']); ?>><div class="oxygen-unslider-container"><ul><?php echo do_shortcode( $content ); ?></ul></div></div><script class="ct-slider-script">jQuery(document).ready(function($){$('#<?php echo esc_attr($options['selector']).'.'.$unique_class; ?> .oxygen-unslider-container:not(.unslider-horizontal,.unslider-fade)').unslider({autoplay: <?php echo ($options['slider_autoplay']=='yes') ? "true" : "false"; ?>, delay: <?php echo $options['slider_autoplay_delay']; ?>, animation: '<?php echo $options['slider_animation']; ?>', speed : <?php echo $options['slider_animation_speed']; ?>, arrows: <?php echo ($options['slider_show_arrows']=='yes') ? "true" : "false" ?>, nav: <?php echo ($options['slider_show_dots']=='yes') ? "true" : "false"; ?>, infinite: <?php echo ($options['slider_infinite']=='yes'&&$options['slider_animation']!='fade') ? "true" : "false"; ?>})});</script><?php
 

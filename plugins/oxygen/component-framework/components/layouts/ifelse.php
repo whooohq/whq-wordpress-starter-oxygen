@@ -18,7 +18,12 @@
 	$conditions = json_decode( $conditions, true );
 	
 	global $OxygenConditions;
-	$result = $OxygenConditions->global_conditions_result($conditions);
+	if (isset($OxygenConditions)) {
+		$result = $OxygenConditions->global_conditions_result($conditions);
+	}
+	else {
+		$result = "";
+	}
 	//TODO: security check for conditions
 	
 	// echo JSON

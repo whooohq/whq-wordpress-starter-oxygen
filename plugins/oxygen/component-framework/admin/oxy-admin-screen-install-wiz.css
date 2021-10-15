@@ -100,7 +100,7 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	overflow: scroll;
+	overflow: auto;
 	flex-grow: 1;
 	padding: 30px;
 	padding-right: 20px;
@@ -118,7 +118,7 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	overflow: scroll;
+	overflow: auto;
 	flex-grow: 1;
 	margin: 0 auto;
 	max-width: 1200px;
@@ -213,7 +213,8 @@
 
 
 .oxygen-vsb-design-set-install-wizard-confirmation {
-	background-color: #272e35;
+	background-color: #262E35; 
+	background: url(https://oxygenbuilder.com/wp-content/uploads/2019/09/competitions-back2x.png), linear-gradient(-45deg,#5137C3,#221969);
 	top: 0;
 	left: 0;
 	bottom: 0;
@@ -226,7 +227,6 @@
 }
 
 .oxygen-vsb-design-set-install-wizard-confirmation-content {
-	background-color: #272e35;
 	color: white;
 	max-width: 100%;
 	width: 800px;

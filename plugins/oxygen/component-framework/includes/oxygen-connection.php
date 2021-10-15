@@ -1453,7 +1453,7 @@ Class OXY_VSB_Connection {
 	}
 
 	function oxygen_vsb_return_website_screenshot($request) {
-		return array('screenshot' => get_option('oxygen_vsb_site_screenshot')?get_option('oxygen_vsb_site_screenshot'):'http://placehold.it/600x400?text=no+screenshot');
+		return array('screenshot' => get_option('oxygen_vsb_site_screenshot')?get_option('oxygen_vsb_site_screenshot'):'http://via.placeholder.com/600x400?text=no+screenshot');
 	}
 
 	function oxygen_vsb_connection_templates($request) {
@@ -1976,7 +1976,7 @@ Class OXY_VSB_Connection {
 					'source' => get_site_url(),
 					'url' => $ct_preview_url?$ct_preview_url:get_permalink($page->ID),
 					'type' => $page->post_type,
-					'screenshot_url' => $providedScreenshot?$providedScreenshot:((is_array($screenshots) && isset($screenshots['page']))?$screenshots['page']:'http://placehold.it/600x100?text=no+screenshot')
+					'screenshot_url' => $providedScreenshot?$providedScreenshot:((is_array($screenshots) && isset($screenshots['page']))?$screenshots['page']:'http://via.placeholder.com/600x100?text=no+screenshot')
 				);
 
 				$page_category = get_post_meta($page->ID, '_ct_connection_page_category', true);
@@ -2108,10 +2108,10 @@ Class OXY_VSB_Connection {
 
 		$section['url'] = $url;
 		if($page->post_type == 'oxy_user_library') {
-			$section['screenshot_url'] = (is_array($screenshots) && isset($screenshots['page']))?$screenshots['page']:'http://placehold.it/600x100?text=no+screenshot';
+			$section['screenshot_url'] = (is_array($screenshots) && isset($screenshots['page']))?$screenshots['page']:'http://via.placeholder.com/600x100?text=no+screenshot';
 		}
 		else {
-			$section['screenshot_url'] = (is_array($screenshots) && isset($screenshots[$item['id']]))?$screenshots[$item['id']]:'http://placehold.it/600x100?text=no+screenshot';
+			$section['screenshot_url'] = (is_array($screenshots) && isset($screenshots[$item['id']]))?$screenshots[$item['id']]:'http://via.placeholder.com/600x100?text=no+screenshot';
 		}
 
 		$section['page'] = $page->ID;

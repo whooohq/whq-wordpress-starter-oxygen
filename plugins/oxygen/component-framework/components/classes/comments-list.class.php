@@ -254,11 +254,16 @@ class Oxygen_VSB_Comments_List extends CT_Component {
                         newlineAndIndent: false,
                         mode: 'php',
                         type: 'php',
+                        matchTags: {bothTags: true},
+                        autoCloseBrackets: true,
+                        matchBrackets: true,
                         onLoad : codemirrorLoaded
                     }" <?php $this->ng_attributes('code-php'); ?>></textarea>
                 </div>
 
                 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+                    <?php global $oxygen_toolbar; 
+                        $oxygen_toolbar->codemirror_theme_chooser(); ?>
                     <a href="#" class="oxygen-code-editor-apply"
                         ng-click="iframeScope.renderComponentWithAJAX('oxy_render_comments_list')">
                         <?php _e("Apply Code", "oxygen"); ?>
@@ -292,11 +297,15 @@ class Oxygen_VSB_Comments_List extends CT_Component {
                         newlineAndIndent: false,
                         mode: 'css',
                         type: 'css',
+                        autoCloseBrackets: true,
+                        matchBrackets: true,
                         onLoad : codemirrorLoaded
                     }" <?php $this->ng_attributes('code-css'); ?>></textarea>
                 </div>
 
                 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+                    <?php global $oxygen_toolbar; 
+                        $oxygen_toolbar->codemirror_theme_chooser(); ?>
                     <a href="#" class="oxygen-code-editor-apply"
                         ng-click="iframeScope.renderComponentWithAJAX('oxy_render_comments_list')">
                         <?php _e("Apply Code", "oxygen"); ?>

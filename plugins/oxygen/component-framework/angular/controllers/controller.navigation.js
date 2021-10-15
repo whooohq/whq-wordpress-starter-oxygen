@@ -404,6 +404,9 @@ CTFrontendBuilder.controller("ControllerNavigation", function($scope, $parentSco
                                             '<div class="ct-expand-butt" ng-click="toggleNode('+id+',$event)">'+
                                                 '<span class="ct-icon"></span>'+
                                             '</div>'+
+                                            '<span class="oxy-drag-handle">'+
+                                            '<img src="' + CtBuilderAjax.oxyFrameworkURI + '/toolbar/UI/oxygen-icons/drag-n-drop.svg" title=""/>'+
+                                            '</span>' +
                                             '<span class="ct-icon ct-node-type-icon"></span>' +
                                             '<i class="ct-icon-if-conditions" ng-if="(component.options['+id+'][\'model\'][\'globalconditions\'] && component.options['+id+'][\'model\'][\'globalconditions\'].length > 0) || component.options['+id+'][\'model\'][\'conditionspreview\'] === \'0\'"></i>'+                                            
                                             '<span class="ct-nicename" ng-if="editableFriendlyName!='+id+'" ng-bind="component.options[\''+item.id+'\'][\'nicename\']" ></span>' + 

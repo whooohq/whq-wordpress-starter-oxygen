@@ -7,6 +7,8 @@
 
         <!-- modal dialog form for the conditions -->
         <?php include_once( CT_FW_PATH . "/toolbar/views/conditions-modal.view.php" ); ?>
+        <!-- modal dialog form for the advanced query -->
+        <?php include_once( CT_FW_PATH . "/toolbar/views/advanced-query-modal.view.php" ); ?>
 		
 		<div class="ct-close-dialog ct-action-button" ng-click="hideDialogWindow()"><i class="fa fa-times fa-lg"></i></div>
 	</div>

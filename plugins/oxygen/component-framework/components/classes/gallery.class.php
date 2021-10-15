@@ -505,7 +505,9 @@ class Oxygen_VSB_Gallery extends CT_Component {
         if ($this->param_array['link'] == 'yes' && $this->param_array['lightbox'] == 'yes' && (!isset($atts['preview']) || $atts['preview'] != 'true') && !wp_doing_ajax()) { ?>
             <script type="text/javascript">
                 document.addEventListener("oxygenVSBInitGalleryJs<?php echo esc_attr($options['selector']); ?>",function(){
-                    jQuery('#<?php echo esc_attr($options['selector']); ?>').photoSwipe('.oxy-gallery-item-contents');
+                    if(jQuery('#<?php echo esc_attr($options['selector']); ?>').photoSwipe) {
+                        jQuery('#<?php echo esc_attr($options['selector']); ?>').photoSwipe('.oxy-gallery-item-contents');
+                    }
                 },false);
                 jQuery(document).ready(function() {
                     let event = new Event('oxygenVSBInitGalleryJs<?php echo esc_attr($options['selector']); ?>');
@@ -533,10 +535,11 @@ class Oxygen_VSB_Gallery extends CT_Component {
 
     function output_js() {
 
-        echo 
-            '<link rel="stylesheet" href="'.CT_FW_URI.'/components/classes/gallery/photoswipe/photoswipe.css">
-             <link rel="stylesheet" href="'.CT_FW_URI.'/components/classes/gallery/photoswipe/default-skin/default-skin.css">
-             <script src="'.CT_FW_URI.'/components/classes/gallery/photoswipe/jquery.photoswipe-global.js"></script>';
+        wp_enqueue_style( 'photoswipe-css', CT_FW_URI . '/components/classes/gallery/photoswipe/photoswipe.css' );
+        wp_enqueue_style( 'photoswipe-default-skin-css', CT_FW_URI . '/components/classes/gallery/photoswipe/default-skin/default-skin.css' );
+
+        wp_enqueue_script( 'photoswipe-global-js', CT_FW_URI . '/components/classes/gallery/photoswipe/jquery.photoswipe-global.js', '', '', true );
+
     }
 
 
@@ -718,6 +721,7 @@ class Oxygen_VSB_Gallery extends CT_Component {
                             <?php 
                             $param = [];
                             $param['param_name'] = 'flex-direction';
+                            $tag = $this->options['tag'];
                             ?>
                             <?php include( CT_FW_PATH . '/toolbar/views/position/position.flex-layout.view.php');?>
                         </div>

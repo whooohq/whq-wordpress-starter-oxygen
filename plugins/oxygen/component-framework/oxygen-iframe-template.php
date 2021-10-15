@@ -50,7 +50,9 @@ if( oxygen_can_activate_builder_compression() ){
 				 dnd-type="'{{selectedDragElementDNDType}}'"
 				 dnd-dragstart="dragstartResizeBoxCallback(event)"
 				 dnd-dragend="dragendResizeBoxCallback(event)"
-				 dnd-disable-if="isLastRow()"></div>
+				 dnd-disable-if="isLastRow()">
+				<img src="<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/drag-n-drop.svg" alt="">
+			</div>
 			<?php endif; ?>
 			<div class="oxygen-resize-box-breadcrumbs">
 				<span class="oxygen-resize-box-breadcrumb">{{niceNames[component.active.name]}}<span ng-if="component.active.parent.id > 0" class="oxygen-resize-box-top oxygen-resize-box-icon" ng-click="activateComponent(component.active.parent.id, component.active.parent.name)"></span></span>
@@ -63,7 +65,9 @@ if( oxygen_can_activate_builder_compression() ){
 				 dnd-type="'{{selectedDragElementDNDType}}'"
 				 dnd-dragstart="dragstartResizeBoxCallback(event,component.active.parent.id)"
 				 dnd-dragend="dragendResizeBoxCallback(event,component.active.parent.id)"
-				 dnd-disable-if="isLastRow(component.active.parent.id)"></div>
+				 dnd-disable-if="isLastRow(component.active.parent.id)">
+				<img src="<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/drag-n-drop.svg" alt="">
+			</div>
 			<div class="oxygen-resize-box-breadcrumbs">
 				<span class="oxygen-resize-box-breadcrumb"
 					ng-click="activateComponent(component.active.parent.id, component.active.parent.name)">

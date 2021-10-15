@@ -61,8 +61,8 @@ Class OxygenCompositeElements {
 				data-searchcat="<?php echo esc_attr( $location ); ?>"
 				ng-click="iframeScope.showAddItemDialog(<?php echo $element->id; ?>, 'component', '0', '', '<?php echo $element->source; ?>', <?php echo $element->page; ?>, '<?php echo $element->name; ?>', '<?php echo $element->category; ?>', '<?php echo $design_name; ?>')">
 				<?php if ( isset($element->icon_url) ) : ?>
-				<img src='<?php echo $element->icon_url; ?>' />
-				<img src='<?php echo $element->icon_url; ?>' />
+				<img src='<?php echo str_replace(array('http://','https://'), "//", $element->icon_url); ?>' />
+				<img src='<?php echo str_replace(array('http://','https://'), "//", $element->icon_url); ?>' />
 				<?php else: ?>
 				<img src='<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/add-icons/widgets.svg' />
 				<img src='<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/add-icons/widgets-active.svg' />

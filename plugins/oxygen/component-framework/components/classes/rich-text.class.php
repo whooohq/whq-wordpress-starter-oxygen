@@ -96,7 +96,8 @@ $oxygen_vsb_components['rich_text'] = new OXY_Rich_Text(
 						"type" 			=> "content",
 						"param_name" 	=> "ct_content",
 						"value" 		=> "This is a block of text. Double-click this text to edit it.",
-						"css" 			=> false
+						"css" 			=> false,
+						"hidden"		=> true,
 					),
 					array(
 						"type" 			=> "font-family",

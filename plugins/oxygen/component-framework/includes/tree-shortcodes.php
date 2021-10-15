@@ -30,6 +30,26 @@ function components_json_to_shortcodes( $json, $reusable = false ) {
 	return $output;
 }
 
+/**
+ * Recursive function that escapes operator/relation/compare param values for wp_advanced_query
+ *
+ * @since 3.7
+ */
+
+function ct_rec_aq_symbols(&$arr, $decode=false) {
+	foreach($arr as $key => $item) {
+		if(!empty($item['values']) && is_array($item['values'])) {
+			ct_rec_aq_symbols($arr[$key]['values'], $decode);
+		}
+		elseif(!empty($item['key']) && !empty($item['value']) && in_array($item['key'], array('compare', 'operator'))) {
+			if($decode) {
+				$arr[$key]['value'] = base64_decode($item['value']);	
+			} else {
+				$arr[$key]['value'] = base64_encode($item['value']);
+			}
+		}
+	}
+}
 
 /**
  * Recursive function that actually transform an Object to WordPress shortcodes
@@ -134,7 +154,7 @@ function parse_components_tree( $components_tree ) {
 		if ( $nested ) {
 			$name .= '_' . $item['depth'];
 		}
-
+		
 		// add shortcode parameters
 		if ( is_array( $item['options'] ) ) {
 			
@@ -148,12 +168,16 @@ function parse_components_tree( $components_tree ) {
 					continue;
 				}
 
+
 				if ( is_array( $value ) ) {
 
 					if ( ! empty( $value ) ) {
 
 						foreach ( $value as $array_key => $array_value ) {
-
+							if($array_key === 'wp_query_advanced') {
+								// convert symbols like < > == to base64, so that it does not break the shortcodes
+								ct_rec_aq_symbols($item['options'][$key][$array_key]);
+							}
 							// make sure widget parameters won't brake the shortcode with quotes
 							if ( $item['name'] == "ct_widget" && $array_key == "instance" ) {
 								$item['options'][$key][$array_key] = ct_encode_widget_instance($array_value);
@@ -194,9 +218,21 @@ function parse_components_tree( $components_tree ) {
 
 							if($array_key == 'globalconditions') {
 								foreach($item['options'][$key][$array_key] as $conditionKey => $condition) {
-									$item['options'][$key][$array_key][$conditionKey]['value'] = base64_encode($condition['value']);
+									if (stripos($condition['value'], '[oxygen')  !== false) {
+										$value = ct_sign_oxy_dynamic_shortcode(array($condition['value']));
+									}
+									else {
+										$value = $condition['value'];
+									}
+									$item['options'][$key][$array_key][$conditionKey]['value'] = base64_encode($value);
 									if (isset($item['options'][$key][$array_key][$conditionKey]['searchValue'])) {
-										$item['options'][$key][$array_key][$conditionKey]['searchValue'] = base64_encode($condition['searchValue']);
+										if (stripos($condition['value'], '[oxygen')  !== false) {
+											$searchValue = ct_sign_oxy_dynamic_shortcode(array($condition['searchValue']));
+										}
+										else {
+											$searchValue = $condition['searchValue'];
+										}
+										$item['options'][$key][$array_key][$conditionKey]['searchValue'] = base64_encode($searchValue);
 									}
 								}
 							}
@@ -390,6 +426,22 @@ function content_to_components_json( $content ) {
 	}
 }
 
+/**
+ * Recursively deobfucate value of a param, in a nested array
+ *
+ * @author Gagan S Goraya
+ * @since 3.7
+ */
+
+function ct_rec_deobfuscate_param(&$children, $param) {
+	foreach($children as $key => $item) {
+		if(is_array($item)) {
+			ct_rec_deobfuscate_param($children[$key], $param);
+		} elseif($key === $param && strpos($item, '+oxygen') !== false) {
+			$children[$key] = preg_replace_callback('/\+oxygen(.+?)\+/i', 'ct_deobfuscate_oxy_url', $item);
+		}
+	}
+}
 
 
 /**
@@ -493,6 +545,11 @@ function parse_shortcodes( $content, $is_first = true, $verify_signature = true 
 					}
 				}
 
+				if($optionKey === 'original' && isset($options[$optionKey]['wp_query_advanced'])) {
+					// this is a nested data structure, so need to recursively go through and deobfuscate any dynamic shortcodes
+					ct_rec_deobfuscate_param($options[$optionKey]['wp_query_advanced'], 'value');
+				}
+
 				if($optionKey === 'original' && isset($options[$optionKey]['globalconditions'])) {
 					foreach($options[$optionKey]['globalconditions'] as $conditionKey => $condition) {
 						if(isset($condition['oxycode'])) {
@@ -523,7 +580,7 @@ function parse_shortcodes( $content, $is_first = true, $verify_signature = true 
 		}
 
 		global $oxygen_signature;
-
+		
 		$verfOptions['ct_options'] 	= json_encode( $options, JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT );
 		
 		$verfInnercontent = $inner_content[ $key ];
@@ -536,6 +593,11 @@ function parse_shortcodes( $content, $is_first = true, $verify_signature = true 
 		// Skip shortcodes that are not properly signed, it has to be done here only after ct_deobfuscate_oxy_url has been applied on the options
 		if ( $verify_signature && ! $oxygen_signature->verify_signature( $names[ $key ], $verfOptions, $verfInnercontent ) ) {
 			continue;
+		}
+
+		// advanced query operator/compare symbols are to be de escaped after signature validation
+		if(is_array($options) && isset($options['original']) && isset($options['original']['wp_query_advanced'])) {
+			ct_rec_aq_symbols($options['original']['wp_query_advanced'], true);
 		}
 
 		$sanitized_options = array();

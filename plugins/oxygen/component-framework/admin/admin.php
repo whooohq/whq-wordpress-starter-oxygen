@@ -44,7 +44,8 @@ function ct_enqueue_admin_scripts( $hook ) {
 	wp_enqueue_style ( 'ct-admin-style', CT_FW_URI . "/admin/admin.css" );
     
     // load specific scrpits only here 
-    if ( 'post.php' != $hook && 'post-new.php' != $hook && 'edit.php' != $hook && 'oxygen_page_oxygen_vsb_settings' != $hook ) {
+    if ( 'post.php' != $hook && 'post-new.php' != $hook && 'edit.php' != $hook && 'oxygen_page_oxygen_vsb_settings' != $hook 
+        && 'oxygen_page_ct_export_import' != $hook ) {
         return;
     }
 
@@ -57,6 +58,15 @@ function ct_enqueue_admin_scripts( $hook ) {
     }
 
     wp_enqueue_script( 'ct-admin-script', CT_FW_URI . "/admin/admin.js" );
+
+
+    if (  'oxygen_page_oxygen_vsb_settings' == $hook ) {
+           wp_enqueue_style ( 'my-styles', CT_FW_URI . "/admin/oxygen_vsb_settings.css" );
+     }
+    if (  'oxygen_page_ct_export_import' == $hook ) {
+           wp_enqueue_style ( 'my-styles', CT_FW_URI . "/admin/ct_export_import.css" );
+     }
+
 }
 add_action( 'admin_enqueue_scripts', 'ct_enqueue_admin_scripts' );
 
@@ -443,3 +453,50 @@ function oxy_admin_body_class($classes) {
     return $classes;
 }
 add_filter('admin_body_class', 'oxy_admin_body_class');
+
+// Rank Math SEO Compatibility code.
+/**
+ * Enqueues the script needed to analyze the content.
+ */
+add_action( 'rank_math/admin/enqueue_scripts', function() {
+    global $post, $pagenow;
+    
+    // exclude templates
+	if ( is_object( $post ) && 'ct_template' === $post->post_type ) {
+		return;
+    }
+
+    if( 'post.php' !== $pagenow || is_null( $post ) ) {
+        return;
+    }
+    
+    // save global $post to restore later
+	$saved_post = $post;
+    
+    wp_enqueue_script(
+        'rank-math-oxygen-analysis',
+        plugins_url( '/js/rank-math-compatibility.js', __FILE__ ),
+        [ 'wp-hooks', 'rank-math-analyzer' ],
+        false,
+        true
+    );
+    wp_localize_script(
+        'rank-math-oxygen-analysis',
+        'rm_data',
+        [ 'oxygen_markup' => ct_do_shortcode( get_post_meta( $post->ID, 'ct_builder_shortcodes', true ) ) ]
+    );
+
+    // restore original global post
+	$post = $saved_post;
+
+} );
+
+// Rank Math Filter to include images added in Oxygen Builder in the Sitemap.
+add_filter( 'rank_math/sitemap/content_before_parse_html_images', function( $content, $post_id ) {
+    $content = $content . ct_do_shortcode( get_post_meta( $post_id, 'ct_builder_shortcodes', true ) );
+
+    return $content;
+}, 10, 2 );
+
+// Fix for Rank Math breaks the comment reply
+add_filter( 'rank_math/frontend/remove_reply_to_com', '__return_false' );

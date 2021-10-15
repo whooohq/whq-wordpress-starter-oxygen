@@ -321,8 +321,8 @@ function oxygen_vsb_setup_wizard_content() {
 									$default_install = add_query_arg('default', 'atomic', $default_install);
 								}
 							?>
-								<a href="<?php echo $default_install;?>" class="button button-large open-oxygen-button button-primary"><?php esc_html_e( 'Default Install', 'component-theme' ); ?></a>
-								<a href="<?php echo $browse_library;?>" class="oxygen-wizard-other-website"><?php esc_html_e( 'Browse Library &raquo;', 'component-theme' ); ?></a>
+								<a href="<?php echo $default_install;?>" class="oxygen-wizard-button"><?php esc_html_e( 'Default Install', 'component-theme' ); ?></a>
+								<a href="<?php echo $browse_library;?>" class="oxygen-wizard-button"><?php esc_html_e( 'Browse Library &raquo;', 'component-theme' ); ?></a>
 							</div>
 						</div>
 
@@ -330,7 +330,7 @@ function oxygen_vsb_setup_wizard_content() {
 							<h4><?php esc_html_e( 'Blank Installation', 'component-theme' ); ?></h4>
 							<h2><?php esc_html_e( 'For Pro Designers', 'component-theme' ); ?></h2>
 							<p><?php esc_html_e( 'Start with a completely blank canvas and build something from scratch.', 'component-theme' ); ?></p>
-							<a href="<?php echo esc_url( admin_url() ); ?>" class="button button-large open-oxygen-button button-primary"><?php esc_html_e( 'Blank Install', 'component-theme' ); ?></a>
+							<a href="<?php echo esc_url( admin_url() ); ?>" class="oxygen-wizard-button"><?php esc_html_e( 'Blank Install', 'component-theme' ); ?></a>
 						</div>
 
 					</div>
@@ -385,10 +385,9 @@ function ct_plugin_setup() {
 	 * 
 	 */
 	
-	//delete_option("ct_svg_sets");
-	$svg_sets = get_option("ct_svg_sets", array() );
+	$svg_sets_names = get_option("ct_svg_sets_names", array() );
 
-	if ( empty( $svg_sets ) ) {
+	if ( empty( $svg_sets_names ) ) {
 
 		$sets = array(
 			"fontawesome" => "Font Awesome",
@@ -415,16 +414,60 @@ function ct_plugin_setup() {
 				}
 				
 			}
-			$file_content = $xml->asXML();
 
-			$svg_sets[$name] = $file_content;
+			$xml_string = $xml->asXML();
+			$xml_array = str_split($xml_string, 800000);
+			$svg_sets_names[$name] = count($xml_array);
+
+			foreach ($xml_array as $id => $value) {
+				$svg_sets[$name." ".$id] = $value;
+			}
 		}
 
-		// save SVG sets to DB
-		update_option("ct_svg_sets", $svg_sets, get_option("oxygen_options_autoload") );
+		$svg_sets_old = get_option("ct_svg_sets", array() );
+
+		// add sets saved before 3.8
+		if (is_array($svg_sets_old)) {
+			foreach ($svg_sets_old as $name => $set) {
+				// it will be single part sets, so add a zero to the end and 1 as parts count
+				$svg_sets[$name." 0"] = $set;
+				$svg_sets_names[$name] = 1;
+			}
+		}
+
+		if (is_array($svg_sets)) {
+			foreach($svg_sets as $key => $set) {
+				// save SVG sets to DB
+				update_option("ct_svg_sets_".$key, $set, get_option("oxygen_options_autoload") );
+			}
+			update_option("ct_svg_sets_names", $svg_sets_names, get_option("oxygen_options_autoload") );
+		}
 	}
 }
 add_action('admin_init', 'ct_plugin_setup', 9);
+
+/**
+ * Gather all sets from various wp_options rows into one object
+ * 
+ * @since 3.8
+ * @author Ilya K.
+ */
+
+function oxy_get_svg_sets() {
+	
+	$svg_sets_names = get_option("ct_svg_sets_names", array() );
+	$svg_sets = array();
+
+	foreach ($svg_sets_names as $set_name => $number_of_parts) {
+		$svg_sets[$set_name] = "";
+		for ($i=0; $i < $number_of_parts; $i++) { 
+			$svg_sets[$set_name] .= get_option("ct_svg_sets_".$set_name." ".$i, true );
+		}
+	}
+
+	return $svg_sets;
+	
+}
 
 
 /**
@@ -778,12 +821,6 @@ function ct_enqueue_scripts() {
 	// Font Loader
 	wp_enqueue_script("font-loader", "//ajax.googleapis.com/ajax/libs/webfont/1/webfont.js", array(), false, false);
 
-	// jQuery UI
-	wp_enqueue_script("jquery-ui", "//code.jquery.com/ui/1.11.3/jquery-ui.js", array(), '1.11.3', false);
-	wp_enqueue_style("jquery-ui-css", "//code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css", array());
-
-	wp_enqueue_script('jquery-ui-sortable');
-
 	wp_enqueue_script('underscore');
 
 	// WordPress Media
@@ -812,14 +849,12 @@ function ct_enqueue_scripts() {
 	// Select2
     wp_enqueue_style ( 'select2', CT_FW_URI . "/vendor/select2/select2.min.css" );
 
-	// nuSelectable
-	//wp_enqueue_script("nu-selectable", 					CT_FW_URI . "/vendor/nuSelectable/jquery.nu-selectable.js");
-
 	// fuse.js
 	wp_enqueue_script("fuse", 					CT_FW_URI . "/vendor/fuse/fuse.min.js");
 
 	// Codemirror
 	wp_enqueue_style ("ct-codemirror", 					CT_FW_URI . "/vendor/codemirror/codemirror.css");
+	wp_enqueue_style ("ct-codemirror-themes", 			CT_FW_URI . "/vendor/codemirror/themes.css", CT_VERSION);
 
 	if(defined("debugger")) {
 		wp_enqueue_script( 'oxygen-unslider', 		CT_FW_URI . '/vendor/unslider/unslider-min.js', array(), false, false);
@@ -827,6 +862,10 @@ function ct_enqueue_scripts() {
 		wp_enqueue_script( 'oxygen-event-swipe', 	CT_FW_URI . '/vendor/unslider/jquery.event.swipe.js', array(), false, false);
 		wp_enqueue_script( 'select2', CT_FW_URI . "/vendor/select2/select2.full.min.js", array( 'jquery' ), false, false );
 		wp_enqueue_script("ct-codemirror", 					CT_FW_URI . "/vendor/codemirror/codemirror.js", array(), false, false);
+		wp_enqueue_script("ct-codemirror-closebrackets", 	CT_FW_URI . "/vendor/codemirror/addon/closebrackets.min.js", array(), '5.59.2', false);
+		wp_enqueue_script("ct-codemirror-matchbrackets", 	CT_FW_URI . "/vendor/codemirror/addon/matchbrackets.min.js", array(), '5.59.2', false);
+		wp_enqueue_script("ct-codemirror-xml-fold", 		CT_FW_URI . "/vendor/codemirror/addon/xml-fold.min.js", array(), '5.59.2', false);
+		wp_enqueue_script("ct-codemirror-matchtags", 		CT_FW_URI . "/vendor/codemirror/addon/matchtags.min.js", array(), '5.59.2', false);
 		wp_enqueue_script("ui-codemirror", 					CT_FW_URI . "/vendor/ui-codemirror/ui-codemirror.js", array(), false, false);
 		wp_enqueue_script("ct-codemirror-html",				CT_FW_URI . "/vendor/codemirror/htmlmixed/htmlmixed.js", array(), false, false);
 		wp_enqueue_script("ct-codemirror-xml",				CT_FW_URI . "/vendor/codemirror/xml/xml.js", array(), false, false);
@@ -836,8 +875,6 @@ function ct_enqueue_scripts() {
 		wp_enqueue_script("ct-codemirror-php",				CT_FW_URI . "/vendor/codemirror/php/php.js", array(), false, false);
 
 		wp_enqueue_script("ct-common-directives",			CT_FW_URI . "/angular/common.directives.js", array(), CT_VERSION);
-
-		wp_enqueue_script("ct-ui-sortable",					CT_FW_URI . "/vendor/ui-sortable/sortable.js", array(), CT_VERSION);
 	}
 	else {
 		wp_enqueue_script("ct-common-directives",			CT_FW_URI . "/angular/common.directives.min.js", array(), CT_VERSION);
@@ -1029,7 +1066,7 @@ function ct_enqueue_scripts() {
 		$options["ctTemplateSingle"] = true;
 	}
 
-	$options["ctSiteUrl"] 			= get_site_url();
+	$options["ctSiteUrl"] 			= get_home_url();
 	$options["oxyFrameworkURI"] 	= CT_FW_URI;
 
 	global $ct_component_categories;
@@ -1106,7 +1143,7 @@ function ct_enqueue_scripts() {
 
 	wp_localize_script( "ct-angular-main", 'CtBuilderAjax', $options);
 	wp_localize_script( "ct-angular-ui", 'CtBuilderAjax', $options);
-	wp_localize_script( "wplink", 'ajaxurl', $options['ajaxUrl']);
+	//wp_localize_script( "wplink", 'ajaxurl', $options['ajaxUrl']);
 }
 add_action( 'wp_enqueue_scripts', 'ct_enqueue_scripts' );
 
@@ -1223,6 +1260,7 @@ function ct_init() {
     	add_action("ct_builder_ng_init", "ct_init_undo_redo");
     	add_action("ct_builder_ng_init", "ct_init_google_fonts");
     	add_action("ct_builder_ng_init", "ct_init_user_enabled_elements");
+    	add_action("ct_builder_ng_init", "ct_init_codemirror_theme");
     	
     	add_action("ct_builder_ng_init", "ct_components_tree_init", 100 );
     	
@@ -1579,6 +1617,15 @@ function ct_init_google_fonts() {
 	}
 }
 
+function ct_init_codemirror_theme() {
+	
+	$codemirror_theme = get_option("oxygen_vsb_codemirror_theme", 'default');
+	$codemirror_wrap = get_option("oxygen_vsb_codemirror_wrap", 'false');
+
+	echo "globalCodeMirrorTheme='$codemirror_theme';";
+	echo "globalCodeMirrorWrap='$codemirror_wrap';";
+}
+
 /**
  * Get categories, pages, components
  *
@@ -1817,6 +1864,7 @@ function ct_init_settings() {
 					"scripts" => array(
 						'scroll_to_hash' 			=> '',
 						'scroll_to_hash_time' 		=> '',
+						'scroll_to_hash_offset' 	=> '',
 					)
 				),
 				$post_meta
@@ -3261,16 +3309,16 @@ function oxygen_vsb_get_global_styles() {
 	}
     $css .= "font-family: ".$display_font.";";
     
-    if ($global_settings["headings"]["H1"]["font-size"] !== "") { 
+    if (!empty($global_settings["headings"]["H1"]["font-size"])) { 
     	$css .= "font-size: ".$global_settings["headings"]["H1"]["font-size"].$global_settings["headings"]["H1"]["font-size-unit"].";";
     }
-    if ($global_settings["headings"]["H1"]["font-weight"] !== "") { 
+    if (!empty($global_settings["headings"]["H1"]["font-weight"])) { 
     	$css .= "font-weight: ".$global_settings["headings"]["H1"]["font-weight"].";";
     }
-    if ($global_settings["headings"]["H1"]["line-height"] !== "") { 
+    if (!empty($global_settings["headings"]["H1"]["line-height"])) { 
     	$css .= "line-height: ".$global_settings["headings"]["H1"]["line-height"].";";
     }
-    if ($global_settings["headings"]["H1"]["color"] !== "") { 
+    if (!empty($global_settings["headings"]["H1"]["color"])) { 
     	$css .= "color: ".oxygen_vsb_get_global_color_value($global_settings["headings"]["H1"]["color"]).";";
     }
     
@@ -3286,17 +3334,17 @@ function oxygen_vsb_get_global_styles() {
 			continue;
 		}
 		
-		if ($options["font-size"] !== "") {
+		if (!empty($options["font-size"])) {
 			$heading_css .= "font-size: ".$options["font-size"].$options["font-size-unit"].";";
 		}
-		if ($options["font-weight"] !== "") {
+		if (!empty($options["font-weight"])) {
 			$heading_css .= "font-weight: ".$options["font-weight"].";";
 		}
-		if ($options["line-height"] !== "") {
+		if (!empty($options["line-height"])) {
 			$heading_css .= "line-height: ".$options["line-height"].";";
 		}
-		if ($options["color"] !== "") {
-				$heading_css .= "color: ".oxygen_vsb_get_global_color_value($options["color"]).";";
+		if (!empty($options["color"])) {
+			$heading_css .= "color: ".oxygen_vsb_get_global_color_value($options["color"]).";";
 		}
 		
 		if ( $heading_css !== "" ) {
@@ -4420,7 +4468,8 @@ function ct_get_global_settings($return_defaults = false) {
 					),
 				"scripts" => array(
 						"scroll_to_hash" 			=> '',
-						"scroll_to_hash_time"		=> ''
+						"scroll_to_hash_time"		=> '',
+						'scroll_to_hash_offset' 	=> '',
 				)
 			);
 
@@ -4503,6 +4552,7 @@ function ct_get_page_settings($only_template=false) {
 				"scripts" => array(
 						'scroll_to_hash' 			=> '',
 						'scroll_to_hash_time' 		=> '',
+						'scroll_to_hash_offset' 	=> '',
 					)
 			);
 

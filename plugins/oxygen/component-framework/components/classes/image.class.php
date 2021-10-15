@@ -127,7 +127,7 @@ $oxygen_vsb_components['image'] = new CT_Image (
 						"type" 			=> "mediaurl",
 						"heading" 		=> __("Image URL"),
 						"param_name" 	=> "src",
-						"value" 		=> "http://placehold.it/1600x900",
+						"value" 		=> "http://via.placeholder.com/1600x900",
 						"condition"		=> "image_type!=2",
 						"css"			=> false
 					),
@@ -187,7 +187,7 @@ $oxygen_vsb_components['image'] = new CT_Image (
 					),
 					array(
 						"param_name" 	=> "attachment_url",
-						"value" 		=> "http://placehold.it/1600x900",
+						"value" 		=> "http://via.placeholder.com/1600x900",
 						"hidden" 		=> true,
 					),
 					array(

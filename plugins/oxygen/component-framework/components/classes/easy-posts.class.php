@@ -84,6 +84,8 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
 
         $this->param_array[$options['id']] = shortcode_atts(
             array(
+                "wp_query_advanced" => "{}",
+                "wp_query_advanced_preset" => '',
                 "template" => 'grid-image-standard',
                 "code_php" => '',
                 "code_css" => '',
@@ -476,7 +478,21 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
                 $args['paged'] = get_query_var( 'paged' );
             }
         }
-
+        elseif($this->param_array[$id]['wp_query']==='advanced') {
+            
+            include_once(CT_FW_PATH."/includes/advanced-query.php");
+            
+            $wp_query_advanced = $this->param_array[$id]['wp_query_advanced'];
+            
+            // if its not array, that means, its coming from ajax request via layouts/easy-posts.php
+            if(!is_array($wp_query_advanced)) {
+                $wp_query_advanced = json_decode(base64_decode($this->param_array[$id]['wp_query_advanced']), true);
+            }
+            
+            $args = Oxy_VSB_Advanced_Query::query_args($wp_query_advanced);
+            // print_r($args);
+            // exit();
+        }
         // default
         else {
             // use current query
@@ -562,6 +578,7 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
                             <?php 
                             $param = [];
                             $param['param_name'] = 'flex-direction';
+                            $tag = $this->options['tag'];
                             ?>
                             <?php include( CT_FW_PATH . '/toolbar/views/position/position.flex-layout.view.php');?>
                         </div>
@@ -806,11 +823,16 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
                         lineNumbers: true,
                         newlineAndIndent: false,
                         mode: 'php',
+                        matchTags: {bothTags: true},
+                        autoCloseBrackets: true,
+                        matchBrackets: true,
                         onLoad : codemirrorLoaded
                     }" <?php $this->ng_attributes('code-php'); ?>></textarea>
                 </div>
 
                 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+                    <?php global $oxygen_toolbar; 
+                        $oxygen_toolbar->codemirror_theme_chooser(); ?>
                     <a href="#" class="oxygen-code-editor-apply"
                         ng-click="iframeScope.renderComponentWithAJAX('oxy_render_easy_posts')">
                         <?php _e("Apply Code", "oxygen"); ?>
@@ -844,11 +866,15 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
                         newlineAndIndent: false,
                         mode: 'css',
                         type: 'css',
+                        autoCloseBrackets: true,
+                        matchBrackets: true,
                         onLoad : codemirrorLoaded
                     }" <?php $this->ng_attributes('code-css'); ?>></textarea>
                 </div>
 
                 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+                    <?php global $oxygen_toolbar; 
+                        $oxygen_toolbar->codemirror_theme_chooser(); ?>
                     <a href="#" class="oxygen-code-editor-apply"
                         ng-click="iframeScope.renderComponentWithAJAX('oxy_render_easy_posts')">
                         <?php _e("Apply Code", "oxygen"); ?>
@@ -884,10 +910,16 @@ class Oxygen_VSB_Easy_Posts extends CT_Component {
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'default'); ?>
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'custom'); ?>
                                 <?php $oxygen_toolbar->button_list_button('wp_query', 'manual'); ?>
+                                <?php $oxygen_toolbar->button_list_button('wp_query', 'advanced'); ?>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <?php 
+                    include_once(CT_FW_PATH."/includes/advanced-query.php");
+                    Oxy_VSB_Advanced_Query::controls('oxy_posts_grid');
+                ?>
 
                 <div class='oxygen-control-row'
                     ng-show="iframeScope.component.options[iframeScope.component.active.id]['model']['wp_query']=='manual'">
@@ -1311,6 +1343,8 @@ $oxygen_vsb_components['easy_posts'] = new Oxygen_VSB_Easy_Posts( array(
 					),
                 "other" => array(
                     "values" => array(
+                        "wp_query_advanced" => array(),
+                        "wp_query_advanced_preset" => '',
                         "template" => 'grid-image-standard',
                         "code_php" => '',
                         "code_css" => '',

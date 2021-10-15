@@ -8,7 +8,7 @@
 
 function ct_svg_sets_callback() {
 	
-	$svg_sets = get_option("ct_svg_sets", array() );
+	$svg_sets_names = get_option("ct_svg_sets_names", array() );
 	$builtin_sets = array(
 		"fontawesome" => "Font Awesome",
 		"linearicons" => "Linearicons"
@@ -24,8 +24,8 @@ function ct_svg_sets_callback() {
 		$svg_sets_rebuild = true;
 	}
 	
-	if ( $svg_sets_rebuild || empty( $svg_sets ) ) {
-		
+	if ( $svg_sets_rebuild || empty( $svg_sets_names ) ) {
+
 		foreach ($builtin_sets as $key => $name) {
 			
 			// import default file	
@@ -46,14 +46,29 @@ function ct_svg_sets_callback() {
 				}
 				
 			}
-			$file_content = $xml->asXML();
+			
+			$xml_string = $xml->asXML();
+			$xml_array = str_split($xml_string, 800000);
+			$svg_sets_names[$name] = count($xml_array);
 
-			$svg_sets[$name] = $file_content;
+			foreach ($xml_array as $id => $value) {
+				$svg_sets[$name." ".$id] = $value;
+			}
+
 		}
 
-		// save SVG sets to DB
-		update_option("ct_svg_sets", $svg_sets, get_option("oxygen_options_autoload") );
+		if (is_array($svg_sets)) {
+			foreach($svg_sets as $key => $set) {
+				// save SVG sets to DB
+				update_option("ct_svg_sets_".$key, $set, get_option("oxygen_options_autoload") );
+			}
+			update_option("ct_svg_sets_names", $svg_sets_names, get_option("oxygen_options_autoload") );
+		}
+		
 	}
+
+
+	$sets = oxy_get_svg_sets();
 
 	// check if user wants to delete an SVG set
 	if ( isset( $_POST['ct_delete_svg_set'] ) ) {
@@ -64,9 +79,11 @@ function ct_svg_sets_callback() {
 
 		$set_to_delete = sanitize_text_field( $_POST['ct_delete_svg_set'] );
 
-		if( isset( $svg_sets[$set_to_delete] ) && FALSE === array_search( $set_to_delete, $builtin_sets ) ) {
-			unset( $svg_sets[$set_to_delete] );
-			update_option("ct_svg_sets", $svg_sets, get_option("oxygen_options_autoload") );
+		if( isset( $svg_sets_names[$set_to_delete] ) && FALSE === array_search( $set_to_delete, $builtin_sets ) ) {
+			// we don't split custom users' sets, so it always ends with 0
+			delete_option("ct_svg_sets_".$set_to_delete." 0");
+			unset( $svg_sets_names[$set_to_delete] );
+			update_option("ct_svg_sets_names", $svg_sets_names, get_option("oxygen_options_autoload") );
 		}
 
 	} elseif ( isset( $_FILES['ct_svg_set_file'] ) ) { // check if user sumbit any file
@@ -124,11 +141,21 @@ function ct_svg_sets_callback() {
 			$file_content = $xml->asXML();
 			
 			if($containsSymbols) {
+				
 				// add uploaded .svg file content to sets
-				$svg_sets[$set_name] = $file_content;
+				// we don't split custom users' sets, so it always ends with 0
+				$result = update_option("ct_svg_sets_".$set_name." 0", $file_content, get_option("oxygen_options_autoload") );
+				
 				// save SVG sets to DB
-				if( FALSE === update_option("ct_svg_sets", $svg_sets, get_option("oxygen_options_autoload") ) ) {
-					_e("<b>Error</b>. Couldn't add the SVG icon set. Try increasing the 'max_allowed_packet' database setting.", "component-theme");
+				if( FALSE === $result ) {
+					_e("<b>Error</b>. Couldn't add the SVG icon set. Try increasing the 'max_allowed_packet' database setting or use smaller file.", "component-theme");
+				}
+				else {
+					$svg_sets_names = get_option("ct_svg_sets_names", array());
+					// we don't split custom users' sets, so it has 1 part only
+					$svg_sets_names[$set_name] = 1;
+
+					update_option("ct_svg_sets_names", $svg_sets_names, get_option("oxygen_options_autoload") );
 				}
 			}
 			else {

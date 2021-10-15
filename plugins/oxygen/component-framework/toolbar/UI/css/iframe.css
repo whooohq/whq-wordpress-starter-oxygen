@@ -538,10 +538,6 @@ div.ct-component.ct-inner-content.ct-inner-content-workarea:empty:after {
     padding-left: 5px;
     cursor: move;
 }
-.oxygen-resize-box-drag:before {
-  content: "\e1a6";
-  font-size: 10px;
-}
 .oxygen-resize-box-top {
   padding-left: 8px;
   margin-right: -2px;

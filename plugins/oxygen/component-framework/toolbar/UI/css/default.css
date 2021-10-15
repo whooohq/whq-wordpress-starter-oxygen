@@ -5776,6 +5776,12 @@ div.oxygen-data-dialog-options .inline {
     display: inline-block;
 }
 
+#ctdynamicdata-popup>div>div>ul>li>div>div:not(.oxygen-apply-button) {
+    min-height: 200px;
+	max-height: calc(100% - 50px);
+	overflow: auto;
+}
+
 div#oxygen-link-data-dialog {
   z-index:9999999999;
 }
@@ -5900,3 +5906,179 @@ div.oxygen-data-dialog-link {
     left: unset;
     transform: unset;
 }
+
+/*Advanced Query panel starts*/
+
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:first-child .oxygen-select-box-options {
+    max-height: 150px;
+    border-radius: 0px;
+}
+
+div.ct-advanced-query-param > .oxygen-control-row {
+  background-color: #4E5860;
+  align-items: center;
+  height: 40px;
+  margin: -10px -10px 10px
+}
+
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper {
+  flex-basis: auto;
+  flex-grow: unset;
+  margin: 0;
+  margin-left: auto;
+}
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:first-child {
+  flex-basis: 100px;
+  margin-left: 6px;
+}
+
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:nth-child(2) {
+
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 6px;
+}
+
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:last-child {
+  flex-grow: 1;
+  margin-right: 8px;
+  text-align: right;
+}
+
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:last-child > span {
+  color:#fff;
+}
+
+div.ct-advanced-query-value > .oxygen-control-row {
+  border-radius: 3px;
+}
+
+div.ct-advanced-query-value > .oxygen-control-row > .oxygen-control-wrapper > div.oxygen-gradient-add-color,
+div.ct-advanced-query-param > .oxygen-control-row > .oxygen-control-wrapper:nth-child(2) > div.oxygen-gradient-add-color {
+  font-size: 13px;
+  padding: 3px 10px;
+  width: auto;
+}
+
+.ct-advanced-query-param {
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    background-color: #222B34;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.ct-advanced-query-value {
+  position: relative;
+}
+
+.ct-advanced-query-value:before {
+  content: '';
+  width: 15px;
+  height: 1px;
+  border-top: 1px dashed rgb(175, 176, 176);
+  position: absolute;
+  left: -15px;
+  top: 22px;
+}
+
+.ct-dynamic-query-nested > .ct-advanced-query-value:not(:first-child):before {
+  left: -11px;
+  width: 11px;
+}
+
+.ct-advanced-query-value > .oxygen-control-row {
+  background-color: #4E5860;
+  height: 40px;
+  align-items: center;
+  justify-content: left;
+}
+
+.ct-advanced-query-value > .oxygen-control-row > .oxygen-control-wrapper {
+  margin: 0;
+  margin-left: 6px;
+  flex-basis: auto;
+  flex-grow: unset;
+}
+
+.ct-advanced-query-value > .oxygen-control-row > .oxygen-control-wrapper.value {
+  flex-grow: 100;
+}
+
+.ct-advanced-query-value > .oxygen-control-row > .oxygen-control-wrapper:last-child {
+  color:#fff;
+  flex-grow: 1;
+  text-align: right;
+  margin-right: 6px;
+}
+
+.ct-dynamic-query-nested {
+  margin-left: 20px;
+  position: relative;
+}
+
+.ct-dynamic-query-nested:before {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: calc(100% - 52px);
+  border-right: 1px dashed rgb(175, 176, 176);
+  left: -11px;
+  top: 24px;
+}
+
+.oxygen-control-wrapper.delete span {
+  margin: 0 0 0 auto;
+  width: 15px;
+  cursor: pointer;
+}
+
+.ct-modal-advanced-query > div.ct-advanced-query-scroll {
+  overflow: auto;
+  height: calc(100% - 100px);
+  margin-bottom:  20px;
+}
+
+.ct-advanced-query-param > div:first-child {
+    border-radius: 3px 3px 0 0
+}
+
+.ct-advanced-query-value {
+  display: flex;
+}
+
+.ct-advanced-query-param > div:last-child {
+  overflow-x: auto;
+  min-height: 150px;
+}
+
+.ct-advanced-query-value > div {
+  min-width: 300px;
+}
+
+.ct-advanced-query-param > div.oxygen-control-row > div.oxygen-control-wrapper > .oxygen-select-box-wrapper {
+  min-width: 170px;
+}
+
+.ct-advanced-query-value > div.oxygen-control-row > div.oxygen-control-wrapper > .oxygen-select-box-wrapper {
+  min-width: 120px;
+}
+
+.ct-advanced-query-param .delete img {
+  opacity: 0.65;
+  width: 12px;
+  height: 12px;
+}
+
+.ct-advanced-query-param .delete img:hover {
+  opacity: 1;
+}
+
+.ct-modal-advanced-query {
+  width: 80%;
+  height: 90%;
+}
+
+/*Advanced Query Panel ends*/

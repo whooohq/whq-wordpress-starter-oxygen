@@ -2036,30 +2036,35 @@ CTFrontendBuilder.controller("ControllerCSS", function($scope, $parentScope, $ht
 
 						style  += "}";
 					}
+					var nonMediaOptions;
 
-					if (componentOptions.name == "ct_new_columns" && componentOptions['original']['set-columns-width-50']
-																  && componentOptions['original']['set-columns-width-50'] != 'never') {
+					if(componentOptions.name == 'ct_new_columns') {
+						nonMediaOptions = componentOptions['original'];
+					}
 
-						style += "@media (max-width: "+$scope.getMediaMaxSize(componentOptions['original']['set-columns-width-50'])+") {";
+					if (componentOptions.name == "ct_new_columns" && nonMediaOptions['set-columns-width-50']
+																  && nonMediaOptions['set-columns-width-50'] != 'never') {
+						
+						style += "@media (max-width: "+$scope.getMediaMaxSize(nonMediaOptions['set-columns-width-50'])+") {";
 						style += '#' + componentOptions.selector + "> .ct-div-block {width: 50% !important;}";
 						style += "}";
 					}
 
 					if ( componentOptions.name == "ct_new_columns" ) {
 					
-						var reverseColumnOrder 			 = parseInt($scope.getMediaMaxSize(componentOptions['original']['reverse-column-order'])) || 0,
-							stackColumnsVertically 		 = parseInt($scope.getMediaMaxSize(componentOptions['original']['stack-columns-vertically'])) || 0,
+						var reverseColumnOrder 			 = parseInt($scope.getMediaMaxSize(nonMediaOptions['reverse-column-order'])) || 0,
+							stackColumnsVertically 		 = parseInt($scope.getMediaMaxSize(nonMediaOptions['stack-columns-vertically'])) || 0,
 							reverseColumnOrderStyles 	 = "",
 							stackColumnsVerticallyStyles = "";
 
-						if (componentOptions['original']['reverse-column-order']=="always") {
+						if (nonMediaOptions['reverse-column-order']=="always") {
 							reverseColumnOrder = 9999999999;
 						}
 
-						if ( componentOptions['original']['stack-columns-vertically'] && 
-							 componentOptions['original']['stack-columns-vertically'] != 'never') {
+						if ( nonMediaOptions['stack-columns-vertically'] && 
+							 nonMediaOptions['stack-columns-vertically'] != 'never') {
 
-							stackColumnsVerticallyStyles += "@media (max-width: "+$scope.getMediaMaxSize(componentOptions['original']['stack-columns-vertically'])+") {";
+							stackColumnsVerticallyStyles += "@media (max-width: "+$scope.getMediaMaxSize(nonMediaOptions['stack-columns-vertically'])+") {";
 								stackColumnsVerticallyStyles += '#' + componentOptions.selector + "> .ct-div-block {";
 								stackColumnsVerticallyStyles += "width: 100% !important;";
 								stackColumnsVerticallyStyles += "}";
@@ -2075,18 +2080,11 @@ CTFrontendBuilder.controller("ControllerCSS", function($scope, $parentScope, $ht
 							stackColumnsVerticallyStyles += "}";
 						}
 
-						if (componentOptions['original']['stack-columns-vertically'] === undefined ) {
+						if ( nonMediaOptions['reverse-column-order'] && 
+							 nonMediaOptions['reverse-column-order'] != 'never' && 
+							 nonMediaOptions['reverse-column-order'] != 'always' ) {
 
-							style += "@media (max-width: "+$scope.getMediaMaxSize(componentDefaults['stack-columns-vertically'])+") {";
-							style += '#' + componentOptions.selector + "> .ct-div-block {width: 100% !important;}";
-							style += "}";
-						}
-
-						if ( componentOptions['original']['reverse-column-order'] && 
-							 componentOptions['original']['reverse-column-order'] != 'never' && 
-							 componentOptions['original']['reverse-column-order'] != 'always' ) {
-
-							reverseColumnOrderStyles += "@media (max-width: "+$scope.getMediaMaxSize(componentOptions['original']['reverse-column-order'])+") {";
+							reverseColumnOrderStyles += "@media (max-width: "+$scope.getMediaMaxSize(nonMediaOptions['reverse-column-order'])+") {";
 							reverseColumnOrderStyles += '#' + componentOptions.selector + "{";
 							if (stackColumnsVertically<reverseColumnOrder) {
 								reverseColumnOrderStyles += "flex-direction: row-reverse;";
@@ -2098,7 +2096,7 @@ CTFrontendBuilder.controller("ControllerCSS", function($scope, $parentScope, $ht
 							reverseColumnOrderStyles += "}";
 						}
 
-						if ( componentOptions['original']['reverse-column-order'] == 'always') {
+						if ( nonMediaOptions['reverse-column-order'] == 'always') {
 		
 							style += '#' + componentOptions.selector + "{flex-direction: row-reverse;}";
 						}
@@ -2899,7 +2897,6 @@ CTFrontendBuilder.controller("ControllerCSS", function($scope, $parentScope, $ht
 
 			            /* CONTENT */
 			            style += '#' + componentOptions.selector + ' .oxy-pricing-box-section.oxy-pricing-box-content {' +
-			                $scope.generateArrayOptionsCSS(stateOptions, 'pricing_box_content') +
 			                'background-color:' + $scope.getGlobalColorValue(stateOptions['pricing_box_content_background']) + ';' +
 			                'text-align:' + stateOptions['pricing_box_content_alignment'] + ';' +
 			                $scope.generateTypographyCSS(stateOptions, 'pricing_box_content_typography') +

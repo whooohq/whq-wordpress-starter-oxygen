@@ -99,12 +99,13 @@ Class CT_Fancy_Icon extends CT_Component {
 
 							<div class="oxygen-input">
 								<input type="text" placeholder="<?php _e("Start typing to search...","oxygen"); ?>"
-									ng-model="iframeScope.iconFilter.title">
+									ng-model="iframeScope.iconFilter.title"
+									ng-model-options="{debounce: 500}">
 							</div>
 
 							<div class="oxygen-icon-grid">
 								<div class="oxygen-icon-grid-icon"
-									ng-repeat="icon in iframeScope.SVGSets[iframeScope.currentSVGSet].defs.symbol | filter:iframeScope.iconFilter"
+									ng-repeat="icon in iframeScope.SVGSets[iframeScope.currentSVGSet].defs.symbol | filter:iframeScope.iconFilter.title track by icon.title"
 									ng-click="iframeScope.setSVGIcon(icon['@attributes']['id'], icon['title'])"
 									ng-class="{'oxygen-icon-grid-icon-active':iframeScope.getOption('icon-id')==iframeScope.currentSVGSet.split(' ').join('')+icon['@attributes']['id']}"
 									title="{{icon.title}}">
@@ -139,7 +140,8 @@ Class CT_Fancy_Icon extends CT_Component {
 		if ( defined("SHOW_CT_BUILDER") ) 
 			return;
 
-		$svg_sets = get_option("ct_svg_sets", array() );
+		//$svg_sets = get_option("ct_svg_sets", array() );
+		$svg_sets = oxy_get_svg_sets();
 
 		// loop all sets
 		foreach ( $svg_sets as $set ) {

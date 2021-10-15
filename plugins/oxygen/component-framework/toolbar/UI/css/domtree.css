@@ -278,10 +278,10 @@
 	display: flex;
 	align-items: center;
 
-    padding-top: 0px;
+    padding-top: 1px;
     padding-right: 4px;
     padding-bottom: 0px;
-    padding-left: 6px;
+    padding-left: 4px;
 
 	width: 100%; 
 	position: relative; 
@@ -858,4 +858,24 @@
 #ct-dom-tree .ct-dom-tree-node-header [contenteditable="true"] {
   -webkit-user-select: text !important;
   user-select: text !important;
+}
+
+.oxy-drag-handle {
+	cursor: move;
+}
+.oxy-drag-handle:before {
+	font-family: 'Flaticons-Solid';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.oxy-drag-handle {
+	padding-right: 5px;
+	cursor: move;
+	opacity: 0.5;
+}
+.oxy-drag-handle:hover {
+	opacity: 1;
 }

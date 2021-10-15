@@ -72,7 +72,7 @@ Class OxygenMainPluginUpdater {
 
 		?>
 		<div class="oxygen-license-wrap <?php echo $this->prefix . 'license-wrap'; ?>">
-			<h2><?php echo $this->plugin_name; ?></h2>
+			<h3><?php echo $this->plugin_name; ?></h3>
 			<form method="post" action="">
 			
 				<?php wp_nonce_field( $this->prefix . 'submit_license', $this->prefix . 'license_nonce_field' ); ?>
@@ -88,7 +88,7 @@ Class OxygenMainPluginUpdater {
 						</tr>
 					</tbody>
 				</table>	
-				<?php submit_button( __("Submit","oxygen"), "primary", $this->prefix."submit_license" ); ?>
+				<?php submit_button( __("Save Oxygen License","oxygen"), "primary", $this->prefix."submit_license" ); ?>
 			
 			</form>
 		</div>

@@ -95,7 +95,7 @@
 	
 		<a href='#' id='oxygen-control-borders-radius-individual'
 			ng-click="editIndividualRadii=true">
-			<?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+			<?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
 	</div>
 
 </div>

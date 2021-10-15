@@ -109,3 +109,10 @@
 		width: 173px;
 	}
 }
+
+/* Firefox */
+@-moz-document url-prefix() { 
+	.wp-picker-container {
+		display: block;
+	}
+}

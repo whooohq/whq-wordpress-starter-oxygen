@@ -3,11 +3,13 @@
  * 
  */
 
-var CTFrontendBuilderUI = angular.module('CTFrontendBuilderUI', [angularDragula(angular),'ngAnimate','ui.codemirror', 'CTCommonDirectives', 'ui.sortable']);
+var CTFrontendBuilderUI = angular.module('CTFrontendBuilderUI', [angularDragula(angular),'ngAnimate','ui.codemirror', 'CTCommonDirectives']);
 
 CTFrontendBuilderUI.controller("ControllerUI", function($controller, $anchorScroll, $location, $scope, $timeout, $interval, $window, dragulaService, $compile, ctScopeService) {  
     ctScopeService.store('uiscope', $scope);
     window.$scope = $scope;
+
+    $scope['CtBuilderAjax'] = $window['CtBuilderAjax'];
     
     /**
      * Include other controllers
@@ -527,6 +529,138 @@ CTFrontendBuilderUI.controller("ControllerUI", function($controller, $anchorScro
         
         return Object.keys($scope.tabs[name]).length > 0;
     }
+
+    /**
+     * delete child values or query params in advanced query tab of repeater
+     * 
+     * @since 3.7
+     * @author Gagan S Goraya
+     */
+
+    $scope.deleteDynamicQueryChild = function(children, e, selector) {
+      var dex = angular.element(e.target).closest(selector).index();
+      children.splice(dex, 1);
+    }
+
+    /**
+     * load preset for advanced query for repeater/easy posts
+     * 
+     * @since 3.7
+     * @author Gagan S Goraya
+     */
+
+    $scope.getDynamicQueryPreset = function(preset, params, title) {
+      var paramEvaled = {};
+
+      var finaly = function() {
+        preset = JSON.stringify(preset);
+
+        for(var i in paramEvaled) {
+          var reg = new RegExp('\\{\\{'+i+'\\}\\}', "g");
+          preset = preset.replace(reg, paramEvaled[i])
+        }
+        
+        $scope.iframeScope.component.options[$scope.iframeScope.component.active.id].model['wp_query_advanced'] = JSON.parse(preset);
+        $scope.iframeScope.setOption($scope.iframeScope.component.active.id, $scope.iframeScope.component.active.name, 'wp_query_advanced');
+
+        if($scope.iframeScope.component.active.name === 'oxy_dynamic_list')  {
+          $scope.iframeScope.updateRepeaterQuery();
+        } else if($scope.iframeScope.component.active.name === 'oxy_posts_grid') {
+          $scope.iframeScope.renderComponentWithAJAX('oxy_render_easy_posts');
+        }
+
+        $scope.iframeScope.component.options[$scope.iframeScope.component.active.id].model['wp_query_advanced_preset'] = title;
+        $scope.iframeScope.setOption($scope.iframeScope.component.active.id, $scope.iframeScope.component.active.name, 'wp_query_advanced_preset');
+      }
+
+      if(params) {
+        $scope.showDialogWindow();
+
+        setTimeout(function() {
+          var container = angular.element('.ct-dialog-window-content-wrap');
+          
+          var presetDialog = container.find('.ct-query-preset-dialog');
+
+          if(presetDialog.length < 1) {
+            presetDialog = angular.element('<div class="ct-query-preset-dialog"></div>');
+            container.append(presetDialog);
+          }
+          
+          presetDialog.html('');
+
+          params.forEach(function(param) {
+            var name = param['name'];
+            var values = param['values'];
+            var template = '';
+            if(values) {
+              template = '<div class="oxygen-control-row">'+
+                  '<div class="oxygen-control-wrapper">'+
+                      '<label class="oxygen-control-label">'+name+'</label>'+
+                      '<div class="oxygen-select oxygen-select-box-wrapper">'+
+                          '<div class="oxygen-select-box">'+
+                              '<div class="oxygen-select-box-current"></div>'+
+                              '<div class="oxygen-select-box-dropdown"></div>'+
+                          '</div>'+
+                          '<div class="oxygen-select-box-options">'+
+                            (Object.values(values).map(function(item) { return '<div class="oxygen-select-box-option">'+item+'</div>'}).join("\n"))+
+                          '</div>'+
+                      '</div>'+
+                  '</div>'+
+                '</div>';
+            } else {
+              template = '<div class="oxygen-control-row">'+
+                    '<div class="oxygen-control-wrapper">'+
+                      '<label class="oxygen-control-label">'+name+'</label>'+
+                      '<div class="oxygen-control">'+
+                          '<div class="oxygen-input">'+
+                              '<input type="text" spellcheck="false" >'+
+                          '</div>'+
+                      '</div>'+
+                  '</div>'+
+                '</div>';
+            }
+
+            presetDialog.append(template);
+
+          })
+
+          var button = angular.element('<div class="oxygen-apply-button">Apply</div>');
+          
+          button.on('click', function() {
+            finaly();
+            presetDialog.remove();
+            $scope.hideDialogWindow();
+          })
+
+          presetDialog.on("click", ".oxygen-select", function(e) {
+              $scope.toggleOxygenSelectBox(e, this);
+          })
+
+          // don't hide the box on input click
+          .on("click", ".oxygen-select-box-option", function(e) {
+              var value = e.target.innerText;
+              angular.element(e.target).closest('.oxygen-select').find('.oxygen-select-box-current').text(value);
+              paramEvaled[angular.element(e.target).closest('.oxygen-control-row').find('.oxygen-control-label').text()] = value;
+          })
+
+          .on("change", ".oxygen-input input", function(e) {
+              var value = e.target.value;
+              paramEvaled[angular.element(e.target).closest('.oxygen-control-row').find('.oxygen-control-label').text()] = value;
+          })
+
+          presetDialog.append(button);
+
+         
+        }, 200);
+
+      } else {
+        finaly();
+      }
+
+
+      
+    }
+
 
 
     /**
@@ -3045,6 +3179,13 @@ CTFrontendBuilderUI.controller("ControllerUI", function($controller, $anchorScro
             $scope.mediaUploadTarget = jQuery(e.target);
             
             var mediaType = $scope.mediaUploadTarget.attr('data-mediaType');
+            var current_image_ids = false;
+            
+            if (mediaType=='gallery') {
+                current_image_ids = $scope.iframeScope.getOption($scope.mediaUploadTarget.attr('data-mediaProperty'));
+                // we need re-init gallery to be sure current images loads correctly
+                $scope.media_uploader[mediaType] = null;
+            }
 
             if(!$scope.media_uploader[mediaType]) {
 
@@ -3065,6 +3206,10 @@ CTFrontendBuilderUI.controller("ControllerUI", function($controller, $anchorScro
                 }
 
                 $scope.media_uploader[mediaType] = wp.media(options);
+
+                if (current_image_ids) {
+                    $scope.media_uploader[mediaType] = wp.media.gallery.edit('[gallery ids="' + current_image_ids + '"]');
+                }
 
                 // gallery
                 $scope.media_uploader[mediaType].on("update", function(selection){
@@ -4135,6 +4280,19 @@ CTFrontendBuilderUI.controller("ControllerUI", function($controller, $anchorScro
           }
         }
         
+    }
+
+    $scope.updateCodeMirrorTheme = function() {
+        if ($scope.globalCodeMirror !== undefined) {
+            $scope.globalCodeMirror.setOption('theme', $scope.iframeScope.globalCodeMirrorTheme);
+        }
+    }
+
+    $scope.updateCodeMirrorWrap = function() {
+        if ($scope.globalCodeMirror !== undefined) {
+            var wrap = $scope.iframeScope.globalCodeMirrorWrap === 'true';
+            $scope.globalCodeMirror.setOption('lineWrapping', wrap);
+        }
     }
 
 });

@@ -69,6 +69,9 @@ function ct_templates_buffer_start() {
 	}
 
 	global $template_content;
+	global $oxy_buffer_started;
+
+	$oxy_buffer_started = false;
 
 	// generate template output
 	$template_content = ct_template_output();
@@ -81,6 +84,7 @@ function ct_templates_buffer_start() {
 	if ( $template_content !== false ) {
 		// all native post output go to buffer
 		ob_start();
+		$oxy_buffer_started = true;
 		
 	} else {
 		
@@ -137,7 +141,7 @@ function ct_templates_buffer_start() {
 
 
 /**
- * Stop buffering native content and output generated template content on frontend
+ * Stop buffering native content
  * 
  * @since 0.2.0
  */
@@ -150,10 +154,15 @@ function ct_templates_buffer_end() {
 	}
 
 	global $template_content;
+	global $oxy_buffer_started;
 
 	if ( $template_content !== false && ob_get_length()>0) {
 		// clear buffer with native content
 		ob_clean();
+	}
+
+	if ( $oxy_buffer_started !== false ) {
+		ob_end_clean();
 	}
 }
 
@@ -493,7 +502,7 @@ function ct_get_archives_template( $post_id = false) {
 		if ( $applies_to_authors && is_author() ) {
 
 			// check specific post type
-			$author 	= get_the_author_id();
+			$author 	= get_the_author_meta('ID');
 			$authors 	= get_post_meta( $template->ID, 'ct_template_authors_archives', true );
 
 			if ( is_array( $authors ) && (in_array('all_authors', $authors) || in_array( $author, $authors )) ) {
@@ -1211,7 +1220,7 @@ function ct_add_term_posts( &$terms, $taxonomy_name, $term_ids = false ) {
 				);
 
 				if($term_id == 'post')
-					$permalink = get_option('siteurl');//get_site_url(null, '/');
+					$permalink = get_option( 'page_for_posts' ) ? get_page_link( get_option( 'page_for_posts' ) ) : get_home_url();
 				else
 					$permalink = get_post_type_archive_link($term_id);
 			}

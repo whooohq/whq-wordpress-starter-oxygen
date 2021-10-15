@@ -397,7 +397,7 @@ jQuery(document).ready(function($) {
 		
 		if (!elementsSelect2.length) {
 			parentRow.find(".oxygen_user_access_enabled_elements").select2({
-				placeholder: "Add Elementss...",
+				placeholder: "Add Elements...",
 			});
 			elementsSelect2 = parentRow.find(".select2");
 		}
@@ -476,7 +476,7 @@ jQuery(document).ready(function($) {
 		
 		if (!elementsSelect2.length) {
 			parentRow.find(".oxygen_role_access_enabled_elements").select2({
-				placeholder: "Add Elementss...",
+				placeholder: "Add Elements...",
 			});
 			elementsSelect2 = parentRow.find(".select2");
 		}

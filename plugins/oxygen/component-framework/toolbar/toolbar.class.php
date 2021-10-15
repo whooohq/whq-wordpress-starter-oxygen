@@ -441,6 +441,7 @@ Class CT_Toolbar {
 								title="<?php _e("Copy styles to another selector", "oxygen"); ?>"
 								ng-click="activateCopySelectorMode(false,$event)"/>
 						<img src='<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/currently-editing/clear-styles.svg'
+								ng-class="{'oxygen-disabled':iframeScope.isIDLocked()}"
 								class="oxygen-no-margin"
 								title="<?php _e("Delete all styles from this selector", "oxygen"); ?>"
 								ng-click="iframeScope.clearSelectorOptions();$event.stopPropagation()"/>
@@ -458,6 +459,7 @@ Class CT_Toolbar {
 								ng-click="$parent.activateCopySelectorMode(className,$event)"/>
 							<img src='<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/currently-editing/clear-styles.svg'
 								class="oxygen-no-margin"
+								ng-class="{'oxygen-disabled':iframeScope.isSelectorLocked(className)}"
 								title="<?php _e("Delete all styles from this selector", "oxygen"); ?>"
 								ng-click="iframeScope.clearSelectorOptions(className);$event.stopPropagation()"/>
 							<img src='<?php echo CT_FW_URI; ?>/toolbar/UI/oxygen-icons/currently-editing/delete-selector.svg'
@@ -467,6 +469,7 @@ Class CT_Toolbar {
 					</li>
 
 					<li title="<?php _e("Copy Styles Here", "oxygen"); ?>"
+						ng-class="{'oxygen-disabled':iframeScope.isIDLocked()&&!copySelectorFromID}"
 						ng-click="iframeScope.copySelectorOptions()"
 						ng-show="copySelectorFromClass||copySelectorFromID">
 							<div class='oxygen-active-selector-box-id'>id</div>
@@ -481,6 +484,7 @@ Class CT_Toolbar {
 					</li>
 						
 					<li title="<?php _e("Copy Styles Here", "oxygen"); ?>"
+						ng-class="{'oxygen-disabled':iframeScope.isSelectorLocked(className)&&copySelectorFromClass!==className}"
 						ng-click="iframeScope.copySelectorOptions(className)"
 						ng-show="copySelectorFromClass||copySelectorFromID"
 						ng-repeat="(key,className) in iframeScope.componentsClasses[iframeScope.component.active.id]">
@@ -499,14 +503,36 @@ Class CT_Toolbar {
 				<!-- .oxygen-classes-dropdown -->
 				<?php else : ?>
 				<div class='oxygen-active-selector-box'>
-					<div class='oxygen-active-selector-box-id'>id</div>
+					
+					<div class='oxygen-active-selector-box-id'
+						ng-show="iframeScope.isEditing('id')">id</div>
+					<div class='oxygen-active-selector-box-class'
+						ng-show="iframeScope.isEditing('class')&&!iframeScope.isEditing('custom-selector')">class</div>
+					
 					<input type='text' spellcheck="false" readonly
+						ng-show="!iframeScope.isEditing('class')"
 						ng-model="iframeScope.component.options[iframeScope.component.active.id]['selector']"/>
+
+					<input type="text" spellcheck="false" readonly
+						ng-show="iframeScope.isEditing('class')"
+						ng-model="iframeScope.currentClass">
+					
 					<div class='oxygen-active-selector-box-state'
 						ng-class="{'oxy-styles-present' : iframeScope.isStatesHasOptions()}">
 						{{(iframeScope.currentState=="original") ? "state" : ":"+iframeScope.currentState}}
 					</div>
 				</div>
+
+					<?php if (oxygen_vsb_user_can_use_ids()) : ?>
+					<ul class="oxygen-classes-dropdown"
+						ng-if="!iframeScope.isEditing('custom-selector')">
+						<li></li>
+						<li ng-click="iframeScope.switchEditToId(true)">
+							<div class='oxygen-active-selector-box-id'>id</div>
+							<div>{{iframeScope.getComponentSelector()}}</div>
+						</li>
+					</ul>
+					<?php endif; ?>
 				<?php endif; ?>
 
 				<ul class="oxygen-states-dropdown">
@@ -725,6 +751,23 @@ Class CT_Toolbar {
 						<span><?php printf( __( 'Wrong parameter type: %s', 'oxygen' ), "background-gradient" ); ?></span>
 					<?php endif; ?>
 				</div>
+				
+				<?php if (oxygen_vsb_current_user_can_full_access()) : ?>
+				<div class="oxy-lock"
+					ng-show="showAllStyles">
+					<label class="oxygen-checkbox">
+						<input type="checkbox"
+							ng-true-value="'true'" 
+							ng-false-value="'false'"
+							ng-model="iframeScope.component.options[iframeScope.component.active.id]['model']['selector-locked']"
+							ng-change="iframeScope.setOption(iframeScope.component.active.id,iframeScope.component.active.name,'selector-locked')">
+						<div class='oxygen-checkbox-checkbox'
+							ng-class="{'oxygen-checkbox-checkbox-active':iframeScope.getOption('selector-locked')=='true'}">
+							<?php _e("Lock Selector Styles","oxygen"); ?>
+						</div>
+					</label>
+				</div>
+				<?php endif; ?>
 
 			<?php
 	}
@@ -2508,6 +2551,29 @@ Class CT_Toolbar {
 
 	<?php }
 
+	/**
+	 * Output textarea-like contenteditable div
+	 *
+	 * @since 3.7
+	 * @author Gagan S Goraya.
+	 */
+
+	function textarea($option, $label) { 
+		?>
+
+		<div class='oxygen-control-wrapper'>
+			<label class='oxygen-control-label'><?php echo esc_html($label); ?></label>
+			<div class='oxygen-control'>
+				<div class='oxygen-input textarea'>
+					<div spellcheck="false" contenteditable="true" data-disabledynamic="true"
+						<?php $this->ng_attributes($option); ?>>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	<?php }
+
 
 	/**
 	 * Output slider with label
@@ -3545,6 +3611,57 @@ Class CT_Toolbar {
 				</div>
 
             </div>
+	<?php }
+
+	
+	/**
+	 * Output HTML for Presets controls
+	 *
+	 * @since 3.8
+	 * @author Ilya K.
+	 */
+
+	static public function codemirror_theme_chooser() { ?>
+
+		<div class="oxygen-codemirror-theme-chooser">
+			<div class="oxygen-select oxygen-select-box-wrapper oxygen-select-up">
+			<div class="oxygen-select-box">
+				<div class="oxygen-select-box-current"
+					ng-class="{'oxygen-select-box-current-default':$parent.iframeScope.globalCodeMirrorTheme=='default'}">
+					{{$parent.iframeScope.globalCodeMirrorTheme == 'default' ? "Editor Theme" : $parent.iframeScope.globalCodeMirrorTheme}}
+				</div>
+				<div class="oxygen-select-box-dropdown"></div>
+			</div>
+			<?php $themes = array(
+				'default'=>__("Default","oxygen"),
+				'dracula'=>__("Dracula","oxygen"),
+				'midnight'=>__("Midnight","oxygen"),
+				'eclipse '=>__("Eclipse ","oxygen"),
+				); ?>
+			<div class="oxygen-select-box-options">
+				<?php foreach ($themes as $key => $name) : ?>
+				<div class="oxygen-select-box-option" 
+				ng-click="$parent.iframeScope.globalCodeMirrorTheme='<?php echo $key; ?>';updateCodeMirrorTheme()">
+				<?php echo $name; ?>
+				</div>
+				<?php endforeach; ?>
+			</div>
+			</div>
+		</div>
+		<div class="oxygen-codemirror-wrap">
+			<label class="oxygen-checkbox">
+				<input type="checkbox"
+					ng-true-value="'true'" 
+					ng-false-value="'false'"
+					ng-change="updateCodeMirrorWrap()"
+					ng-model="iframeScope.globalCodeMirrorWrap"> 
+				<div class='oxygen-checkbox-checkbox'
+					ng-class="{'oxygen-checkbox-checkbox-active':iframeScope.globalCodeMirrorWrap=='true'}">
+					<?php _e("Wrap","oxygen"); ?>
+				</div>
+			</label>
+		</div>
+
 	<?php }
 }
 

@@ -257,6 +257,8 @@ function ct_save_components_tree_as_post() {
   	$typekit_fonts 			= update_option("oxygen_vsb_latest_typekit_fonts", $typekit_fonts );
   	$global_colors 			= update_option("oxygen_vsb_global_colors", $params['global_colors'] );
   	$element_presets 		= update_option("oxygen_vsb_element_presets", $params['element_presets'], get_option("oxygen_options_autoload") );
+  	$codemirror_theme 		= update_option("oxygen_vsb_codemirror_theme", $params['codemirror_theme'], get_option("oxygen_options_autoload") );
+  	$codemirror_wrap 		= update_option("oxygen_vsb_codemirror_wrap", $params['codemirror_wrap'], get_option("oxygen_options_autoload") );
   	
   	// udpate global colors global var to latest to proper CSS generation
   	global $oxygen_vsb_global_colors;
@@ -1023,7 +1025,28 @@ function ct_render_widget_form_by_ajax() {
 		do_action( "admin_print_styles-widgets.php" );
 		do_action( 'admin_print_styles' );
 		do_action( "admin_print_scripts-widgets.php" );
+		
+		?>
+		<script type="text/javascript">
+			/*
+				The below fix, restores the Builder's CodeMirror after the widgets
+				using WP's CodeMirror gets initialized.
+		 	*/
+		 	(() => {
+				let bkupcodemirror = window.CodeMirror;
+
+				setTimeout(function() {
+					window['CodeMirror'] = bkupcodemirror;
+				}, 500);
+			})()
+		</script>
+		<?php
+		// because the builder already uses its own codeMirror.
+		// global $wp_scripts;
+		// unset($wp_scripts->registered['wp-codemirror']);
+
 		do_action( 'admin_print_scripts' );
+
 		//do_action( "admin_head-widgets.php" );
 		//do_action( 'admin_head' );
 		//wp_head();
@@ -1123,7 +1146,8 @@ function ct_get_svg_icon_sets() {
 		die ( 'Security check' );
 	}
 
-	$svg_sets = get_option("ct_svg_sets", array() );
+	//$svg_sets = get_option("ct_svg_sets", array() );
+	$svg_sets = oxy_get_svg_sets();
 
 	// Convert XML sets to Objects
 	foreach ( $svg_sets as $name => $set ) {
@@ -3465,27 +3489,34 @@ function oxygen_vsb_ajax_request_header_check() {
 
 }
 
-
 function oxygen_vsb_sign_shortcodes($type) {
 	
 	$response = array('messages' => array(), 'children' => array());
-
-
-	$pages = get_posts(array("post_type" => array($type), 'numberposts' => -1));
 	
-	
-	if(sizeof($pages) > 0) {
+	$page_ids = isset($_REQUEST['page_ids']) ? $_REQUEST['page_ids'] : false;
+	if (!$page_ids) {
+		$pages = get_posts(
+			array(
+				'post_type' => array($type), 
+				'numberposts' => -1,
+				'orderby' => 'ID',
+				'order' => 'ASC',
+				'meta_key' => 'ct_builder_shortcodes',
+			)
+		);
+		$page_ids = array_map(function($page){
+			return $page->ID;
+		}, $pages);
+	}
+
+	if(sizeof($page_ids) > 0) {
 
 		// get index from request, if not available set it to zero
 		$index = isset($_REQUEST['index'])?intval($_REQUEST['index']): 0;
-		
-		// get $pages[$index], get the shortcodes, do the process
-		$page = $pages[$index];
-		
-		
+		$page_id = $page_ids[$index];
 		
 		// get the shortcodes of the page
-		$shortcodes = get_post_meta($page->ID, 'ct_builder_shortcodes', true);
+		$shortcodes = get_post_meta($page_id, 'ct_builder_shortcodes', true);
 		
 
 		if($shortcodes) {
@@ -3494,7 +3525,7 @@ function oxygen_vsb_sign_shortcodes($type) {
 				$response['messages'][] = 'Inactive Shortcodes Present: "'.implode(', ', $not_registered_shortcodes).'" on post type "'.$type.'" with ID = '.$page->ID.' - Activate Add-Ons Before Re-Signing.';
 			}
 			else {
-				$response['messages'][] = 'Signing shortcodes on post type "'.$type.'" with ID = '.$page->ID;
+				$response['messages'][] = 'Signing shortcodes on post type "'.$type.'" with ID = '.$page_id;
 
 				// parse without verifying signature, as these might not have any signature
 				$shortcodes = parse_shortcodes($shortcodes, false, false);
@@ -3502,21 +3533,22 @@ function oxygen_vsb_sign_shortcodes($type) {
 				//save again and re-sign in the process
 				$shortcodes = parse_components_tree($shortcodes['content']);
 
-				update_post_meta($page->ID, 'ct_builder_shortcodes', $shortcodes);
+				update_post_meta($page_id, 'ct_builder_shortcodes', $shortcodes);
 			}
 
 		}
 		else {
-			$response['messages'][] = 'No shortcodes found on post of type "'.$type.'" with ID = '.$page->ID;
+			$response['messages'][] = 'No shortcodes found on post of type "'.$type.'" with ID = '.$page_id;
 		}
 
-		if($index < sizeof($pages) - 1) {
+		if($index < sizeof($page_ids) - 1) {
 			$index++;
 			$response['index'] = $index;
+			$response['page_ids'] = $page_ids;
 		}
 	}
 	else {
-		$response['messages'][]= 'no post of type '.$type.' found';
+		$response['messages'][] = 'No post of type "'.$type.'" found';
 	}
 
 	return $response;

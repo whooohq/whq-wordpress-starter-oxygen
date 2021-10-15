@@ -55,10 +55,7 @@ Class OxygenElement extends OxygenElementControls {
 		$this->params['tag'] = $this->generate_tag($id);
 		
 		// add shortcodes
-        add_shortcode($this->params['tag'], array($this, 'shortcode'));
-        for ( $i = 2; $i <= 16; $i++ ) {
-			add_shortcode($this->params['tag'] . "_" . $i, array($this, 'shortcode'));
-		}
+		add_shortcode($this->params['tag'], array($this, 'shortcode'));     
 
         // +Add section button
        	$this->addButton();
@@ -203,6 +200,11 @@ Class OxygenElement extends OxygenElementControls {
 				            array( $this, "oxy_editable"),
 				            $html);
 		$this->params['html'] = $this->prefix_options($html);
+
+		// nestable elements
+		if (strpos($this->params['html'], "%%CONTENT%%") !== false){
+			$this->nestable();
+		}
 	}
 
 
@@ -898,6 +900,7 @@ Class OxygenElement extends OxygenElementControls {
 			call_user_func_array( $this->getParam('php_callback'), array( $this->unprefix_options($options), $this->unprefix_options($this->defaults), $content) );
 			$wp_scripts = wp_scripts();
 			$wp_styles  = wp_styles();
+
 			wp_print_scripts( $wp_scripts->queue );
 			//wp_print_styles( $wp_styles->queue );
 			if ( isset($this->params['inlineJS']) ) { 
@@ -960,7 +963,7 @@ Class OxygenElement extends OxygenElementControls {
 
 
     /**
-	 * 'template_include' filter used when AJAX call made to page/post permalink
+	 * Define element as nestable and register extra shortcodes for nesting
 	 *
 	 * @author Ilya K.
 	 * @since 2.4
@@ -969,6 +972,10 @@ Class OxygenElement extends OxygenElementControls {
 	public function nestable() {
 
 		$this->params['nestable'] = true;
+
+		for ( $i = 2; $i <= 16; $i++ ) {
+			add_shortcode($this->params['tag'] . "_" . $i, array($this, 'shortcode'));
+		}
 	}
 
 

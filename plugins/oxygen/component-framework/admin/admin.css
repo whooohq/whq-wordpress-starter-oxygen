@@ -236,6 +236,10 @@
 	border-bottom: 1px solid rgba(0,0,0,0.2);
 }
 
+#ct_connection_metabox h2 {
+    color: #fff;
+}
+
 #ct_views_cpt .postbox-header .hndle,
 #ct_views_cpt .hndle span, 
 #ct_connection_metabox .hndle span {

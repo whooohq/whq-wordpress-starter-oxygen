@@ -164,7 +164,7 @@ Class Oxy_Toggle extends CT_Component {
         <?php if(isset($params['toggle_icon_color'])) : ?>
         <?php echo $params["selector"]; ?> .oxy-expand-collapse-icon::before,
         <?php echo $params["selector"]; ?> .oxy-expand-collapse-icon::after {
-            <?php $this->output_single_css_property("background-color", $params['toggle_icon_color']); ?>
+            <?php $this->output_single_css_property("background-color", oxygen_vsb_get_global_color_value($params['toggle_icon_color'])); ?>
         }
         <?php endif; ?>
 

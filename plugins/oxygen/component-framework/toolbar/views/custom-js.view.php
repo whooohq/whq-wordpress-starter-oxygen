@@ -3,12 +3,16 @@
 	      lineNumbers: true,
 	      mode: 'javascript',
 	      type: 'custom-js',
+		  autoCloseBrackets: true,
+      	  matchBrackets: true,
 	      onLoad : codemirrorLoaded
 	    }" <?php $this->ng_attributes('custom-js','model'); ?>></textarea>
 	<div class="oxygen-code-error-container"></div>
 </div>
 
 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+	<?php global $oxygen_toolbar; 
+    	$oxygen_toolbar->codemirror_theme_chooser(); ?>
 	<a href="#" class="oxygen-code-editor-apply"
 		ng-click="iframeScope.applyComponentJS()">
 		<?php _e("Apply Code", "oxygen"); ?>

@@ -117,6 +117,7 @@ Class Oxygen_Scripts {
 		if ( isset($page_settings['scripts']) && is_array($page_settings['scripts'])) {
 			$show_script = $page_settings['scripts']['scroll_to_hash'];
 			$time = $page_settings['scripts']['scroll_to_hash_time'];
+			$offset = $page_settings['scripts']['scroll_to_hash_offset'];
 		}
 		
 		if ($show_script!=='true') {
@@ -124,14 +125,22 @@ Class Oxygen_Scripts {
 			$time = $global_settings['scripts']['scroll_to_hash_time'];
 		}
 
+		if (!isset($offset)||trim($offset)=="") {
+			$offset = isset($global_settings['scripts']['scroll_to_hash_offset']) ? $global_settings['scripts']['scroll_to_hash_offset'] : "0";
+		}
+
 		if (!$time) {
 			$time = "1000";
+		}
+
+		if (!$offset) {
+			$offset = "0";
 		}
 
 		$time = esc_attr($time);
 		$time = intval($time);
 
-		if ($show_script==="true") : ?><script>jQuery(document).on('click','a[href*="#"]',function(t){if(jQuery(this).is('[href="#"]')||jQuery(this).is('[href="#0"]')){return};if(location.pathname.replace(/^\//,"")==this.pathname.replace(/^\//,"")&&location.hostname==this.hostname){var e=jQuery(this.hash);(e=e.length?e:jQuery("[name="+this.hash.slice(1)+"]")).length&&(t.preventDefault(),jQuery("html, body").animate({scrollTop:e.offset().top},<?php echo $time; ?>))}});</script><?php endif;
+		if ($show_script==="true") : ?><script>jQuery(document).on('click','a[href*="#"]',function(t){if(jQuery(t.target).closest('.wc-tabs').length>0){return}if(jQuery(this).is('[href="#"]')||jQuery(this).is('[href="#0"]')){return};if(location.pathname.replace(/^\//,"")==this.pathname.replace(/^\//,"")&&location.hostname==this.hostname){var e=jQuery(this.hash);(e=e.length?e:jQuery("[name="+this.hash.slice(1)+"]")).length&&(t.preventDefault(),jQuery("html, body").animate({scrollTop:e.offset().top-<?php echo $offset; ?>},<?php echo $time; ?>))}});</script><?php endif;
 
 	}
 
@@ -154,7 +163,25 @@ Class Oxygen_Scripts {
 		 * Smooth Scroll to Hash Links
 		 */
 		
-		?><script>jQuery('html').on('click', '.oxygen-scroll-to-hash-links a[href*="#"]:not([href="#"]):not([href="#0"])', function(t){var time=jQuery('body').attr('data-oxygen-scroll-to-hash-links');if(!time)time=1000;if(location.pathname.replace(/^\//,"")==this.pathname.replace(/^\//,"")&&location.hostname==this.hostname){var e=jQuery(this.hash);(e=e.length?e:jQuery("[name="+this.hash.slice(1)+"]")).length&&(t.preventDefault(),jQuery("html, body").animate({scrollTop:e.offset().top},parseInt(time)))}});</script><?php
+		?><script>
+			let clickcount = 0, dbcltimeout = null;
+			jQuery('html').on('click', '.oxygen-scroll-to-hash-links a[href*="#"]:not([href="#"]):not([href="#0"])', 
+				function(t) {
+					// logic to ignore double clicks
+					clickcount++;
+					if(clickcount > 1 && dbcltimeout) {
+						clearTimeout(dbcltimeout);
+						dbcltimeout = null
+						return;
+					}
+					dbcltimeout = setTimeout(function() {
+						var time=jQuery('body').attr('data-oxygen-scroll-to-hash-links'),offset=jQuery('body').attr('data-oxygen-scroll-to-hash-links-offset');if(!time)time=1000;if(!offset)offset=0;if(location.pathname.replace(/^\//,"")==this.pathname.replace(/^\//,"")&&location.hostname==this.hostname){var e=jQuery(this.hash);(e=e.length?e:jQuery("[name="+this.hash.slice(1)+"]")).length&&(t.preventDefault(),jQuery("html, body").animate({scrollTop:e.offset().top-offset},parseInt(time)))}
+						clearTimeout(dbcltimeout);
+						dbcltimeout = null
+					}.bind(this), 300);
+				}
+			);
+			</script><?php
 
 	}
 

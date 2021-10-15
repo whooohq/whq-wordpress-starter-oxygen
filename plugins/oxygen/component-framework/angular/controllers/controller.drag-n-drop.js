@@ -47,9 +47,12 @@ CTFrontendBuilderUI.controller("ControllerDragnDrop", function($scope, $timeout,
 
             moves: function(el, ctn, target) {
 
-                //console.log(el, ctn, target);
-                
                 dragBottomBubble = null;
+
+                // only allow draging via handle
+                if (jQuery(target).closest('.oxy-drag-handle').length == 0) {
+                    return false;
+                }
 
                 // don't let the div inside a repeater be moved around
                 if(ctn.classList.contains('ct-sortable-dynamic-list') && el.classList.contains('ct-sortable-div-block')) {

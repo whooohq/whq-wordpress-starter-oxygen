@@ -142,7 +142,7 @@
 
                         <div class="oxygen-select-box-options">
                             <div class="oxygen-select-box-option global-conditions-value-item"
-                                ng-repeat="(key, value) in iframeScope.globalConditions[iframeScope.component.options[iframeScope.component.active.id]['model']['globalconditions'][index]['name']]['values']['options']">
+                                ng-repeat="(key, value) in iframeScope.globalConditions[iframeScope.component.options[iframeScope.component.active.id]['model']['globalconditions'][index]['name']]['values']['options'] track by key">
                                 <span 
                                     ng-click="iframeScope.setConditionValue(index,key,value); 
                                     evalGlobalConditions(); evalGlobalConditionsInList()">

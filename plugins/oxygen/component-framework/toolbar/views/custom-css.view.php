@@ -7,6 +7,8 @@
         lineNumbers: true,
         mode: 'css',
         type: 'custom-css',
+        autoCloseBrackets: true,
+        matchBrackets: true,
         onLoad : codemirrorLoaded
       }" <?php $this->ng_attributes('custom-css','model'); ?>
       ng-change="iframeScope.applyComponentCSS()"></textarea>
@@ -19,6 +21,8 @@
 </div>
 
 <div class="oxygen-control-row oxygen-control-row-bottom-bar oxygen-control-row-bottom-bar-code-editor">
+  <?php global $oxygen_toolbar; 
+    $oxygen_toolbar->codemirror_theme_chooser(); ?>
   <a href="#" class="oxygen-code-editor-apply"
     ng-click="iframeScope.applyComponentCSS()">
     <?php _e("Apply Code", "oxygen"); ?>

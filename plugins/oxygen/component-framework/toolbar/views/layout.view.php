@@ -258,9 +258,9 @@
 				<div class='oxygen-button-list'>
 
 					<?php $this->button_list_button('align-self','auto'); ?>
-					<?php $this->button_list_button('align-self','left'); ?>
+					<?php $this->button_list_button('align-self','flex-start'); ?>
 					<?php $this->button_list_button('align-self','center'); ?>
-					<?php $this->button_list_button('align-self','right'); ?>
+					<?php $this->button_list_button('align-self','flex-end'); ?>
 					<?php $this->button_list_button('align-self','stretch'); ?>
 
 				</div>

@@ -124,7 +124,8 @@ Class CT_SVG_Icon extends CT_Component {
 		if ( defined("SHOW_CT_BUILDER") ) 
 			return;
 
-		$svg_sets = get_option("ct_svg_sets", array() );
+		//$svg_sets = get_option("ct_svg_sets", array() );
+		$svg_sets = oxy_get_svg_sets();
 
 		// loop all sets
 		foreach ( $svg_sets as $set ) {
@@ -188,7 +189,8 @@ Class CT_SVG_Icon extends CT_Component {
 		if ( !defined("OXYGEN_IFRAME") && !defined("SHOW_CT_BUILDER") ) 
 			return;
 
-		$svg_sets = get_option("ct_svg_sets", array() );
+		//$svg_sets = get_option("ct_svg_sets", array() );
+		$svg_sets = oxy_get_svg_sets();
 
 		foreach ( $svg_sets as $set ) {
 			

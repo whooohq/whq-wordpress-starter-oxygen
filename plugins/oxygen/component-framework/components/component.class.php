@@ -466,6 +466,7 @@ Class CT_Component {
 		'slider-stretch-slides',
 		'slider-slide-padding',
 		'slider-slide-padding-unit',
+		'selector-locked'
 	);
 
 	
@@ -484,7 +485,8 @@ Class CT_Component {
 		"custom-js",
 		"testimonial_author_info",
 		"progress_bar_right_text",
-		"target"
+		"target",
+		"tag"
 	);
 
 	/**
@@ -860,8 +862,8 @@ Class CT_Component {
 				if ( isset($param['hidden']) && $param['hidden'] ) 
 					continue;
 
-				if ( isset($param['type']) && $param['type'] == "content" ) 
-					continue;
+				// if ( isset($param['type']) && $param['type'] == "content" ) 
+				// 	continue;
 
 				if ( isset($param['condition']) && $param['condition'] ) { 
 
@@ -988,8 +990,13 @@ Class CT_Component {
 				} else if (isset($param['param_name'])){
 					$prefix = $param['param_name'] . "_";
 				}
-				
-				if ( $param['type'] == 'font-family' ) : 
+				if ( $param['type'] == 'content' ) : 
+					?>
+					<div class="oxygen-control-row" <?php echo $ng_show; ?>>
+						<?php $oxygen_toolbar->textarea($param['param_name'],  __("Content","oxygen")); ?>
+					</div>
+					<?php
+				elseif ( $param['type'] == 'font-family' ) : 
 					// no need to prefix if CSSOption()  
 					if (isset($param['css_option']) && $param['css_option']==true) {
 						$prefix = "";
@@ -1255,7 +1262,7 @@ Class CT_Component {
 						
 							<a href='#' id='oxygen-control-borders-radius-individual'
 								ng-click="editIndividualRadii=true">
-								<?php _e("edit individual radii", "oxygen"); ?> &raquo;</a>
+								<?php _e("edit individual radius", "oxygen"); ?> &raquo;</a>
 						</div>
 
 					</div>
@@ -1412,9 +1419,16 @@ Class CT_Component {
 								<?php $oxygen_toolbar->colorpicker($param['param_name']); ?>
 								<?php break;
 
-							case 'tag' : ?>
+							case 'tag' : 
+							
+								if ( isset($options['shortcode']) && $options['shortcode'] ) {
+									$shortcode_arg = ", true";
+								};
+								
+								?>
 
-								<div class="oxygen-select oxygen-select-box-wrapper">
+								<div class="oxygen-select oxygen-select-box-wrapper"
+									ng-hide="iframeScope.getOption('useCustomTag')=='true'">
 									<div class="oxygen-select-box"
 										ng-class="{'oxygen-option-default':iframeScope.isInherited(iframeScope.component.active.id, '<?php echo esc_attr( $param['param_name'] ); ?>')}">
 										<div class="oxygen-select-box-current">{{iframeScope.getOption('<?php echo esc_attr( $param['param_name'] ); ?>')}}</div>
@@ -1429,6 +1443,26 @@ Class CT_Component {
 										<?php endforeach; ?>
 									</div>
 								</div>
+								
+								<div class='oxygen-input'
+									ng-show="iframeScope.getOption('useCustomTag')=='true'">
+									<input type="text" value="" spellcheck="false"
+										placeholder="<?php _e("custom tag","oxygen"); ?>" 
+										<?php self::ng_attributes($param['param_name'],'model',$options); ?>
+										ng-change="iframeScope.setOption(iframeScope.component.active.id,'<?php echo isset($options['tag'])?esc_attr($options['tag']):''; ?>','<?php echo isset($param['param_name'])?esc_attr($param['param_name']):''; ?>'<?php echo isset($shortcode_arg)?$shortcode_arg:''; ?>);iframeScope.changeTag(<?php if ($tag=='ct_shortcode') echo "'shortcode'"; else if (isset($options['data_type']) && $options['data_type']===true) echo "'data'"; else if (isset($param['rebuild']) && $param['rebuild']===true) echo "'rebuild'"; ?>); iframeScope.validateCustomTag('<?php echo $param['param_name']; ?>')">
+								</div>
+
+								<label class="oxygen-checkbox">
+									<input type="checkbox"
+										ng-true-value="'true'" 
+										ng-false-value="'false'"
+										<?php self::ng_attributes('useCustomTag','model,change',$options); ?>>
+									<div class='oxygen-checkbox-checkbox'
+										ng-class="{'oxygen-checkbox-checkbox-active':iframeScope.getOption('useCustomTag')=='true'}">
+										<?php _e("Use custom tag","oxygen"); ?>
+									</div>
+								</label>								
+								
 								<?php break;
 
 							case 'measurebox' : ?>
@@ -2299,17 +2333,22 @@ Class CT_Component {
 		$this->css_states = $css_states;
 		$this->states = $states;
 
+		// default 'div' value for empty custom tag 
+		if (isset($states['original']['tag'])&&$states['original']['tag']==="") {
+			$states['original']['tag']='div';
+		}
+
 		// merge with defaults for shortcodes
 		$states['original'] = array_merge( $default_atts, $states['original'] );
 
 		// build regular CSS
 
-		$styles = $this->build_css($css_states, $selector);
+		$styles = $this->build_css($css_states, $selector, $css_states['original']);
 
 		// build media queries CSS
 		if ( isset($css_states['media']) && is_array($css_states['media']) ) {
 			foreach ( $css_states['media'] as $media_name => $css_states) {
-				$media_css = $this->build_css($css_states, $selector, $media_name);
+				$media_css = $this->build_css($css_states, $selector, $css_states['original'], $media_name);
 				if ( $media_css ) {
 					$this->media_queries[$selector][$media_name] = $media_css;
 				}
@@ -2348,7 +2387,7 @@ Class CT_Component {
 	 * @since 0.3.2
 	 */
 	
-	function build_css($states, $selector, $is_media = false) {
+	function build_css($states, $selector, $original, $is_media = false) {
 
 		global $ct_template_id;
 		global $media_queries_list;
@@ -2362,6 +2401,11 @@ Class CT_Component {
 
 		// get defaults
 		$default_atts = $this->get_default_params();
+
+		// fallback to default if original is not set
+		if (is_array($original)) {
+			$original = array_replace_recursive($default_atts, $original);
+		}
 
 		$paragraph = '';
 		// add to css selector if paragraph
@@ -2559,13 +2603,6 @@ Class CT_Component {
 
 		// init styles variable
 		$styles = "";
-
-		// default 
-		if (sizeof($states) < 1 && $this->options['tag'] == "ct_new_columns") {
-			$styles .= "@media (max-width: ".$media_queries_list[$default_atts['stack-columns-vertically']]['maxSize'].") {";
-			$styles .= '#' . $selector . "> .ct-div-block {width: 100% !important;}";
-			$styles .= "}";
-		}
 
 		/**
 		 * Filter to add specific component styles from component Class
@@ -2779,8 +2816,8 @@ Class CT_Component {
 			$default_stack_columns_vert = "";
 
 			// default 
-			if (!isset($atts['stack-columns-vertically']) && $this->options['tag'] == "ct_new_columns") {
-				$default_stack_columns_vert .= "@media (max-width: ".$media_queries_list[$default_atts['stack-columns-vertically']]['maxSize'].") {";
+			if (!isset($original['stack-columns-vertically']) && $this->options['tag'] == "ct_new_columns") {
+				$default_stack_columns_vert .= "@media (max-width: ".$media_queries_list[$original['stack-columns-vertically']]['maxSize'].") {";
 				$default_stack_columns_vert .= '#' . $selector . "> .ct-div-block {width: 100% !important;}";
 				$default_stack_columns_vert .= "}";
 			}
@@ -2869,30 +2906,30 @@ Class CT_Component {
 			 * Oxy New Columns
 			 */
 
-			if ( $this->options['tag'] == "ct_new_columns" && isset($atts['set-columns-width-50'])
-														  && $atts['set-columns-width-50'] != 'never') {
+			if ( $this->options['tag'] == "ct_new_columns" && isset($original['set-columns-width-50'])
+														  && $original['set-columns-width-50'] != 'never') {
 
-				$styles .= "@media (max-width: ".$media_queries_list[$atts['set-columns-width-50']]['maxSize'].") {";
+				$styles .= "@media (max-width: ".$media_queries_list[$original['set-columns-width-50']]['maxSize'].") {";
 				$styles .= '#' . $selector . "> .ct-div-block {width: 50% !important;}";
 				$styles .= "}";
 			}
 			
 			if ( $this->options['tag'] == "ct_new_columns" ) {
 
-				if(isset($atts['reverse-column-order']))
-					$reverseColumnOrder 			= isset($media_queries_list[$atts['reverse-column-order']]) ? intval($media_queries_list[$atts['reverse-column-order']]['maxSize']) : 0;
+				if(isset($original['reverse-column-order']))
+					$reverseColumnOrder 			= isset($media_queries_list[$original['reverse-column-order']]) ? intval($media_queries_list[$original['reverse-column-order']]['maxSize']) : 0;
 				
-				if(isset($atts['stack-columns-vertically']))
-					$stackColumnsVertically 		= intval($media_queries_list[$atts['stack-columns-vertically']]['maxSize']);
+				if(isset($original['stack-columns-vertically']))
+					$stackColumnsVertically 		= intval($media_queries_list[$original['stack-columns-vertically']]['maxSize']);
 				
 				$reverseColumnOrderStyles 	 	= "";
 				$stackColumnsVerticallyStyles 	= "";
 
-				if (!isset($atts['stack-columns-vertically']) && $this->options['tag'] == "ct_new_columns") {
-					$stackColumnsVertically = intval($media_queries_list[$default_atts['stack-columns-vertically']]['maxSize']);
+				if (!isset($original['stack-columns-vertically']) && $this->options['tag'] == "ct_new_columns") {
+					$stackColumnsVertically = intval($media_queries_list[$original['stack-columns-vertically']]['maxSize']);
 				}
 
-				if (isset($atts['reverse-column-order']) && $atts['reverse-column-order']=="always") {
+				if (isset($original['reverse-column-order']) && $original['reverse-column-order']=="always") {
 					$reverseColumnOrder = 9999999999;
 				}
 
@@ -2912,6 +2949,13 @@ Class CT_Component {
 						}
 						$stackColumnsVerticallyStyles .= "}";
 					$stackColumnsVerticallyStyles .= "}";
+				}
+
+				// default 
+				if (!$is_media && !isset($atts['stack-columns-vertically']) && $original['stack-columns-vertically'] !== 'never') {
+					$styles .= "@media (max-width: ".$media_queries_list[$original['stack-columns-vertically']]['maxSize'].") {";
+					$styles .= '#' . $selector . "> .ct-div-block {width: 100% !important;}";
+					$styles .= "}";
 				}
 
 				$styles .= $default_stack_columns_vert;
@@ -3796,7 +3840,9 @@ Class CT_Component {
 					$atts['ct_options']['original']['globalconditions'][$conditionKey]['value'] = base64_decode($condition['value']);
 				}
 
-				$result = $OxygenConditions->global_conditions_result(array('conditions' => $atts['ct_options']['original']['globalconditions'], 'type' => isset($atts['ct_options']['original']['conditionstype'])?$atts['ct_options']['original']['conditionstype']:''));
+				if (isset($OxygenConditions)) {
+					$result = $OxygenConditions->global_conditions_result(array('conditions' => $atts['ct_options']['original']['globalconditions'], 'type' => isset($atts['ct_options']['original']['conditionstype'])?$atts['ct_options']['original']['conditionstype']:''));
+				}
 
 				if(!$result) {
 					return false;

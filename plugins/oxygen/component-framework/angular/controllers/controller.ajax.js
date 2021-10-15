@@ -80,8 +80,11 @@ CTFrontendBuilder.controller("ControllerAJAX", function($scope, $parentScope, $h
             element_presets: $scope.elementPresets,
 
             // last preview URL
-            preview: $scope.previewType == 'post' ? $scope.template.postData.permalink : $scope.template.postData.permalink
+            preview: $scope.previewType == 'post' ? $scope.template.postData.permalink : $scope.template.postData.permalink,
 
+            // CodeMirror Theme
+            codemirror_theme: $scope.globalCodeMirrorTheme,
+            codemirror_wrap: $scope.globalCodeMirrorWrap,
         };
 
         // save loaded google fonts to cache
@@ -648,7 +651,8 @@ CTFrontendBuilder.controller("ControllerAJAX", function($scope, $parentScope, $h
                 query_order_by:repeaterOptions['original']['query_order_by'],
                 query_all_posts:repeaterOptions['original']['query_all_posts'],
                 query_ignore_sticky_posts:repeaterOptions['original']['query_ignore_sticky_posts'],
-                query_count:repeaterOptions['original']['query_count']
+                query_count:repeaterOptions['original']['query_count'],
+                wp_query_advanced:repeaterOptions['original']['wp_query_advanced']
             }
 
             queryOptions = JSON.stringify(shortcode_data['queryOptions']);
@@ -1184,7 +1188,8 @@ CTFrontendBuilder.controller("ControllerAJAX", function($scope, $parentScope, $h
                 query_order_by:repeaterOptions['original']['query_order_by'],
                 query_all_posts:repeaterOptions['original']['query_all_posts'],
                 query_ignore_sticky_posts:repeaterOptions['original']['query_ignore_sticky_posts'],
-                query_count:repeaterOptions['original']['query_count']
+                query_count:repeaterOptions['original']['query_count'],
+                wp_query_advanced:repeaterOptions['original']['wp_query_advanced']
             }
 
         }
@@ -1319,7 +1324,9 @@ CTFrontendBuilder.controller("ControllerAJAX", function($scope, $parentScope, $h
                 query_order_by:repeaterOptions['original']['query_order_by'],
                 query_all_posts:repeaterOptions['original']['query_all_posts'],
                 query_ignore_sticky_posts:repeaterOptions['original']['query_ignore_sticky_posts'],
-                query_count:repeaterOptions['original']['query_count']
+                query_count:repeaterOptions['original']['query_count'],
+                wp_query_advanced:repeaterOptions['original']['wp_query_advanced']
+
             }
 
             if (acfRepeaterFields.length > 0) {
